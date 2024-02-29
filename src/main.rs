@@ -13,8 +13,8 @@ struct State {
 
 const MAX_SPEED: f32 = 350.0; // the max speed the player can go
 const ACCELERATION_RATE: f32 = 700.0; // how fast the player accelerates
-const GRAVITY: f32 = 160.0; // the speed at which the player falls
-const MAX_FALL: f32 = 250.0; // the max rate the player can fall
+const GRAVITY: f32 = 400.0; // the speed at which the player falls
+const MAX_FALL: f32 = 600.0; // the max rate the player can fall
 const TEMP_GROUND: f32 = 600.0; // dummy ground for testing bouncing
 const CROSS_ACCEL: f32 = 2.0; // acceleration boost for going in opposite direction
 const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
@@ -22,7 +22,7 @@ const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
 const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
 const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
-const BOUNCE_HEIGHT: f32 = -250.0; //player jump height, its negative because y zero is at top of screen
+const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
 
 
 //just initializes the notan render + logic loop
@@ -121,9 +121,6 @@ fn update(app: &mut App, state: &mut State) {
         state.y = TEMP_GROUND;
         state.y_vel = BOUNCE_HEIGHT;
         println!("bounce here {}", state.y_vel);
-    }
-    else{
-        state.y += state.y_vel * app.timer.delta_f32();
     }
     
     //this is the screen wrap code from left to right

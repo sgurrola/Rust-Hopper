@@ -9,6 +9,8 @@ struct State {
     y: f32, //actual y position of player on screen
     x_vel: f32, //players velocity in x direction
     y_vel: f32, //players velocity in y direction
+    offset: f32, //test for fake camera
+    score: f32,
 }
 
 const MAX_SPEED: f32 = 350.0; // the max speed the player can go
@@ -54,6 +56,8 @@ fn init(gfx: &mut Graphics) -> State {
         y: 100.0,
         x_vel: 0.0,
         y_vel:0.0,
+        offset:0.0,
+        score:0.0,
     }
 }
 
@@ -136,6 +140,16 @@ fn update(app: &mut App, state: &mut State) {
 
     //didn't realize I had this code here twice, will delete later but physics are currently tuned with this
     state.y += state.y_vel * app.timer.delta_f32();
+
+    //This moves the platforms up if the player is moving up and is in the top 2/3rds of the screen
+    if state.y < 500.0 && state.y_vel < 0.0 {
+        state.offset -= state.y_vel * app.timer.delta_f32();
+    }
+
+    if state.y_vel < 0.0 {
+        state.score -= state.y_vel * app.timer.delta_f32();
+        println!("score is {}", state.score)
+    }
 }
 
 //this is the draw function, does all of the rendering each frame
@@ -143,7 +157,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     draw.image(&state.img).size(PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
-    draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0);
-    draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0);
+    draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
+    draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
     gfx.render(&draw);
 }

@@ -11,8 +11,91 @@ struct State {
     y_vel: f32, //players velocity in y direction
     offset: f32, //test for fake camera
     score: f32,
+    anims: Vec<Anims>,
+    anim: usize,
+    shoot:bool
+
+    
+    //anim: Option<Box<dyn AnimState>>
+
 }
 
+enum Anims{
+    Idle(Animation, usize),
+    Falling(Animation, usize),
+    Shooting(Animation, usize),
+}
+/*
+trait AnimState {
+    fn update(wow: &Self, num: f32, state: &mut State) where Self:Sized{}
+    fn shoot( wow: &Self, state: &mut State) where Self:Sized{
+        return state.shooting;
+    }
+    fn image(wow: &Self) -> Texture where Self:Sized{}
+}
+*/
+struct Animation
+{
+    anims: Vec<Texture>,
+    timing: f32,
+    frame: i32,
+    speed: f32,
+}
+
+
+/*
+impl AnimState for Idle {
+    fn image(wow: &Self) -> Texture{
+        return wow.anims[wow.frame];
+    }
+    fn update(wow: &Self, num:f32, state: &mut State){
+        wow.timing += num;
+        if wow.timing > wow.speed {
+            wow.timing = 0.0;
+            wow.frame = wow.frame + 1 % wow.anims.len();
+        }
+        if state.y_vel > 0.0{
+            return state.falling;
+        }
+        else {return state.rising;}
+    }
+}
+
+impl AnimState for Falling {
+    fn image(wow: &Self) -> Texture{
+        return wow.anims[wow.frame];
+    }
+    fn update(wow: &Self, num:f32, state: &mut State) -> Box<dyn State>{
+        wow.timing += num;
+        if wow.timing > wow.speed {
+            wow.timing = 0.0;
+            wow.frame = wow.frame + 1 % wow.anims.len();
+        }
+
+        if state.y_vel < 0.0{
+            return state.rising;
+        }
+        else {return state.falling;}
+    }
+}
+
+impl AnimState for Shooting {
+    fn image(wow: &Self) -> Texture{
+        return wow.anims[wow.frame];
+    }
+    fn update(wow: &Self, num:f32, state: &mut State){
+        wow.timing += num;
+        if wow.timing > wow.speed {
+            wow.timing = 0.0;
+            wow.frame = wow.frame + 1;
+            if wow.frame >= wow.anims.len() as i32{
+                return state.rising;
+            }
+        }
+        else {return state.shooting;}
+    }
+}
+*/
 const MAX_SPEED: f32 = 350.0; // the max speed the player can go
 const ACCELERATION_RATE: f32 = 700.0; // how fast the player accelerates
 const GRAVITY: f32 = 400.0; // the speed at which the player falls
@@ -47,10 +130,49 @@ fn init(gfx: &mut Graphics) -> State {
 
     let texture = gfx
         .create_texture()
-        .from_image(include_bytes!("assets/guy.jpg"))
+        .from_image(include_bytes!("assets/andrewzoom.png"))
         .build()
         .unwrap();
-    State { 
+
+    let idle1 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_idle1.png"))
+    .build()
+    .unwrap();
+
+    let idle2 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_idle2.png"))
+    .build()
+    .unwrap();
+
+    let idle3 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_idle3.png"))
+    .build()
+    .unwrap();
+
+    let fall4 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_falling1.png"))
+    .build()
+    .unwrap();
+
+    let fall5 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_falling2.png"))
+    .build()
+    .unwrap();
+
+    let fall6 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/guy_falling3.png"))
+    .build()
+    .unwrap();
+
+    let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
+    let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
+    State {
         img: texture,
         x: 100.0,
         y: 100.0,
@@ -58,6 +180,9 @@ fn init(gfx: &mut Graphics) -> State {
         y_vel:0.0,
         offset:0.0,
         score:0.0,
+        anim:0,
+        anims: vec![temp, temp1],
+        shoot: false,
     }
 }
 
@@ -147,16 +272,65 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     if state.y_vel < 0.0 {
-        state.score -= state.y_vel * app.timer.delta_f32();
+        state.score -= state.y_vel * app.timer.delta_f32() * 0.1;
         println!("score is {}", state.score)
     }
+
+     match state.anims[state.anim]{
+        Anims::Idle(ref mut anime, i) => {
+            anime.timing += app.timer.delta_f32();
+            if anime.timing > anime.speed {
+                anime.frame = (anime.frame + 1) % (anime.anims.len() as i32);
+                anime.timing = 0.0;
+            }
+            if state.y_vel > 0.0{
+                state.anim = 1;
+                anime.frame = 0;
+                anime.timing = 0.0;
+            }
+            if state.shoot {
+                state.anim = 2;
+            }
+        }
+        Anims::Falling(ref mut anime, i) =>  {
+            anime.timing += app.timer.delta_f32();
+            if anime.timing > anime.speed {
+                anime.frame = (anime.frame + 1) % (anime.anims.len() as i32);
+                anime.timing = 0.0;
+            }
+            if state.y_vel < 0.0{
+                state.anim = 0;
+            }
+            if state.shoot {
+                state.anim = 2;
+            }
+        }
+        Anims::Shooting(ref mut anime, i) => {
+            anime.timing += app.timer.delta_f32();
+            if anime.timing > anime.speed {
+                anime.frame = (anime.frame + 1);
+                anime.timing = 0.0;
+            }
+            if anime.frame >= anime.anims.len() as i32{
+                state.anim = 0;
+                anime.frame = 0;
+                anime.timing = 0.0;
+            }
+        }
+     }
+    
 }
 
 //this is the draw function, does all of the rendering each frame
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
-    draw.image(&state.img).size(PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
+    let thing;
+    match &state.anims[state.anim]{
+        Anims::Idle(anime, _) | Anims::Falling(anime, _) | Anims::Shooting(anime, _) => thing = &anime.anims[anime.frame as usize],
+        _ => thing = &state.img,
+    }
+    draw.image(thing).size(PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
     gfx.render(&draw);

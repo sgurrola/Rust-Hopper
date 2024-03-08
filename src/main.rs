@@ -13,7 +13,8 @@ struct State {
     score: f32,
     anims: Vec<Anims>,
     anim: usize,
-    shoot:bool
+    shoot:bool,
+    facing:f32,
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -183,6 +184,7 @@ fn init(gfx: &mut Graphics) -> State {
         anim:0,
         anims: vec![temp, temp1],
         shoot: false,
+        facing: 1.0,
     }
 }
 
@@ -191,6 +193,10 @@ fn update(app: &mut App, state: &mut State) {
 
     //for moving left
     if app.keyboard.is_down(KeyCode::A) {
+        if state.facing > 0.0 {
+            state.x += PLAYER_WIDTH;
+        }
+        state.facing = -1.0;
         //checks if player is moving with or against key, and adds to the velocity acordingly
         if state.x_vel < 1.0 {
         state.x_vel -= ACCELERATION_RATE * app.timer.delta_f32();
@@ -203,6 +209,11 @@ fn update(app: &mut App, state: &mut State) {
     }
     //for moving right
     if app.keyboard.is_down(KeyCode::D) {
+        if state.facing < 0.0 {
+            state.x -= PLAYER_WIDTH;
+            
+        }
+        state.facing = 1.0;
         //checks if player is moving with or against key, and adds to the velocity acordingly
         if state.x_vel > 1.0 {
             state.x_vel += ACCELERATION_RATE * app.timer.delta_f32();
@@ -330,7 +341,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         Anims::Idle(anime, _) | Anims::Falling(anime, _) | Anims::Shooting(anime, _) => thing = &anime.anims[anime.frame as usize],
         _ => thing = &state.img,
     }
-    draw.image(thing).size(PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
+    draw.image(thing).size(state.facing * PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
     gfx.render(&draw);

@@ -1,0 +1,11 @@
+C:\Users\jacks\Rust projects\Rust-Hopper\target\debug\deps\libbyte_tools-b8f0be020107cd56.rmeta: C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\lib.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_slice.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_slice.rs
+
+C:\Users\jacks\Rust projects\Rust-Hopper\target\debug\deps\libbyte_tools-b8f0be020107cd56.rlib: C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\lib.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_slice.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_slice.rs
+
+C:\Users\jacks\Rust projects\Rust-Hopper\target\debug\deps\byte_tools-b8f0be020107cd56.d: C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\lib.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_single.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_slice.rs C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_slice.rs
+
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\lib.rs:
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_single.rs:
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_single.rs:
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\read_slice.rs:
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\byte-tools-0.2.0\src\write_slice.rs:

@@ -1,5 +1,6 @@
-use notan::draw::*;
 use notan::prelude::*;
+use notan::draw::*;
+use rand::Rng;
 
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
 #[derive(AppState)]
@@ -15,6 +16,7 @@ struct State {
     anim: usize,
     shoot:bool,
     facing:f32,
+    platform_list: Vec<PlatformResult>,
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -106,24 +108,28 @@ const CROSS_ACCEL: f32 = 2.0; // acceleration boost for going in opposite direct
 const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
+const PLATFORM_WIDTH: f32 = 100.0;
+const PLATFORM_HEIGHT: f32 = 30.0;
 const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
 const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
 const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
 
+// const PLATFORM_SPEED: f32 = 20.0;
+// const MAX_SPEED: f32 = 350.0; // the max speed the player can go
+// const ACCELERATION_RATE: f32 = 700.0; // how fast the player accelerates
+// const GRAVITY: f32 = 400.0; // the speed at which the player falls
+// const MAX_FALL: f32 = 600.0; // the max rate the player can fall
+// const TEMP_GROUND: f32 = 600.0; // dummy ground for testing bouncing
+// const CROSS_ACCEL: f32 = 2.0; // acceleration boost for going in opposite direction
+// const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
+// const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
+// const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
+// const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
 
-//just initializes the notan render + logic loop
-#[notan_main]
-fn main() -> Result<(), String> {
-    let win_config = WindowConfig::new()
-        .set_size(WINDOW_X, WINDOW_Y);
+fn main() ->Result<(), String> {
+    let win_config: WindowConfig = WindowConfig::new().set_size(WINDOW_X, WINDOW_Y).set_vsync(true);
 
-    notan::init_with(init)
-        .add_config(win_config)
-        .add_config(DrawConfig)
-        .update(update)
-        .draw(draw)
-        .build()
-        
+    notan::init_with(init).add_config(win_config).add_config(DrawConfig).update(update).draw(draw).build()
 }
 
 //this just initializes the loops, used in main
@@ -185,6 +191,128 @@ fn init(gfx: &mut Graphics) -> State {
         anims: vec![temp, temp1],
         shoot: false,
         facing: 1.0,
+        platform_list: vec![
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+                PlatformResult::Blank,
+            ],
     }
 }
 
@@ -279,6 +407,14 @@ fn update(app: &mut App, state: &mut State) {
 
     //This moves the platforms up if the player is moving up and is in the top 2/3rds of the screen
     if state.y < 500.0 && state.y_vel < 0.0 {
+        for platform in state.platform_list.iter_mut() {
+            match platform {
+                PlatformResult::BasicPlatform(ref mut platform) => {
+                    platform.y -= state.y_vel * app.timer.delta_f32();
+                }
+                PlatformResult::Blank => {}
+            }
+        } 
         state.offset -= state.y_vel * app.timer.delta_f32();
     }
 
@@ -332,9 +468,8 @@ fn update(app: &mut App, state: &mut State) {
     
 }
 
-//this is the draw function, does all of the rendering each frame
 fn draw(gfx: &mut Graphics, state: &mut State) {
-    let mut draw = gfx.create_draw();
+    let mut draw: Draw = gfx.create_draw();
     draw.clear(Color::BLACK);
     let thing;
     match &state.anims[state.anim]{
@@ -344,5 +479,219 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     draw.image(thing).size(state.facing * PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
+
+    spawn_platforms(&mut state.platform_list, state.score as usize);
+    if state.score == 0.0 
+    {
+        state.score = 1.0;
+    }
+    for platform in state.platform_list.iter() {
+        match platform {
+            PlatformResult::BasicPlatform(platform) => {
+                draw.rect(platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+            }
+            PlatformResult::Blank => {}
+        }
+    } 
+
+    // draw.rect(state.jumpy_boi.position(), (PLAYER_WIDTH, PLAYER_HEIGHT));
     gfx.render(&draw);
+    
 }
+
+// #[derive(AppState)]
+// struct State {
+//     platform_list: Vec<PlatformResult>,
+//     score: i32,
+// }
+
+// impl State {
+//     fn new(_gfx: &mut Graphics) -> Self {
+//         Self {
+//             platform_list: vec![
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//                 PlatformResult::Blank,
+//             ],
+//             score: 0,
+//         }
+//     }
+// }
+
+trait Platform {
+    fn new(x: f32, y: f32) -> Self;
+    fn position(&self) -> (f32, f32);
+}
+
+enum PlatformResult {
+    BasicPlatform(BasicPlatform),
+    Blank,
+}
+
+struct BasicPlatform {
+    x: f32,
+    y: f32,
+}
+
+impl Platform for BasicPlatform {
+    fn new(x: f32, y: f32) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
+    fn position(&self) -> (f32, f32) {
+        (self.x, self.y)
+    }
+}
+
+fn spawn_platforms(platforms: &mut Vec<PlatformResult>, score: usize) {
+    let mut bit: i8 = 0;
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    if score == 0 as usize {
+        for i in 0..6 {
+            for t in 0..20 {
+                bit = rng.gen_range(0..=4);
+                if bit == 1 {
+                    platforms[(i*20)+t] = PlatformResult::BasicPlatform(BasicPlatform::new(i as f32 * 100.0, t as f32 * 30.0));
+                } else {
+                    platforms[(i*20)+t] = PlatformResult::Blank;
+                }
+            }
+        }
+    }
+}
+
+// struct JumpyBoi {
+//     x: f32,
+//     y: f32,
+// }
+
+// impl JumpyBoi {
+//     fn new(x: f32, y: f32) -> Self {
+//         Self {
+//             x,
+//             y,
+//         }
+//     }
+//     fn position(&self) -> (f32, f32) {
+//         (self.x, self.y)
+//     }
+// }

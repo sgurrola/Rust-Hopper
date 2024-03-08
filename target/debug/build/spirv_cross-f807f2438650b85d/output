@@ -1,0 +1,123 @@
+OPT_LEVEL = Some("0")
+TARGET = Some("x86_64-pc-windows-msvc")
+HOST = Some("x86_64-pc-windows-msvc")
+cargo:rerun-if-env-changed=CXX_x86_64-pc-windows-msvc
+CXX_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CXX_x86_64_pc_windows_msvc
+CXX_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CXX
+HOST_CXX = None
+cargo:rerun-if-env-changed=CXX
+CXX = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("fxsr,sse,sse2")
+DEBUG = Some("false")
+cargo:rerun-if-env-changed=CXXFLAGS_x86_64-pc-windows-msvc
+CXXFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CXXFLAGS_x86_64_pc_windows_msvc
+CXXFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CXXFLAGS
+HOST_CXXFLAGS = None
+cargo:rerun-if-env-changed=CXXFLAGS
+CXXFLAGS = None
+cargo:rerun-if-env-changed=CXX_x86_64-pc-windows-msvc
+CXX_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CXX_x86_64_pc_windows_msvc
+CXX_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CXX
+HOST_CXX = None
+cargo:rerun-if-env-changed=CXX
+CXX = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("fxsr,sse,sse2")
+cargo:rerun-if-env-changed=CXXFLAGS_x86_64-pc-windows-msvc
+CXXFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CXXFLAGS_x86_64_pc_windows_msvc
+CXXFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CXXFLAGS
+HOST_CXXFLAGS = None
+cargo:rerun-if-env-changed=CXXFLAGS
+CXXFLAGS = None
+cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+wrapper.cpp
+src/wrapper.cpp(1): warning C4068: unknown pragma 'GCC'
+src/wrapper.cpp(472): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+src/wrapper.cpp(480): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+spirv_cfg.cpp
+spirv_cross.cpp
+spirv_cross_parsed_ir.cpp
+spirv_parser.cpp
+spirv_cross_util.cpp
+spirv_glsl.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vector(788): warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vector(747): note: see reference to function template instantiation 'std::pair<_Kty,_Ty> *std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>::_Emplace_reallocate<std::pair<_Kty,_Ty>>(std::pair<_Kty,_Ty> *const ,std::pair<_Kty,_Ty> &&)' being compiled
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vector(747): note: see reference to function template instantiation 'std::pair<_Kty,_Ty> *std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>::_Emplace_reallocate<std::pair<_Kty,_Ty>>(std::pair<_Kty,_Ty> *const ,std::pair<_Kty,_Ty> &&)' being compiled
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vector(761): note: see reference to function template instantiation 'void std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>::emplace_back<std::pair<_Kty,_Ty>>(std::pair<_Kty,_Ty> &&)' being compiled
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vector(759): note: while compiling class template member function 'void std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>::push_back(std::pair<_Kty,_Ty> &&)'
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+src/vendor/SPIRV-Cross/spirv_glsl.cpp(357): note: see reference to function template instantiation 'void std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>::push_back(std::pair<_Kty,_Ty> &&)' being compiled
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+C:\Users\jacks\.cargo\registry\src\index.crates.io-6f17d22bba15001f\spirv_cross-0.23.1\src\vendor\SPIRV-Cross\spirv_glsl.hpp(840): note: see reference to class template instantiation 'std::vector<std::pair<_Kty,_Ty>,std::allocator<std::pair<_Kty,_Ty>>>' being compiled
+        with
+        [
+            _Kty=uint32_t,
+            _Ty=uint32_t
+        ]
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+exit code: 0
+cargo:rerun-if-env-changed=AR_x86_64-pc-windows-msvc
+AR_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=AR_x86_64_pc_windows_msvc
+AR_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_AR
+HOST_AR = None
+cargo:rerun-if-env-changed=AR
+AR = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64-pc-windows-msvc
+ARFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64_pc_windows_msvc
+ARFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_ARFLAGS
+HOST_ARFLAGS = None
+cargo:rerun-if-env-changed=ARFLAGS
+ARFLAGS = None
+cargo:rustc-link-lib=static=spirv-cross-rust-wrapper
+cargo:rustc-link-search=native=C:\Users\jacks\Rust projects\Rust-Hopper\target\debug\build\spirv_cross-f807f2438650b85d\out
+cargo:rerun-if-env-changed=CXXSTDLIB_x86_64-pc-windows-msvc
+CXXSTDLIB_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CXXSTDLIB_x86_64_pc_windows_msvc
+CXXSTDLIB_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CXXSTDLIB
+HOST_CXXSTDLIB = None
+cargo:rerun-if-env-changed=CXXSTDLIB
+CXXSTDLIB = None

@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "Rust-Hopper"
-version = "0.1.0"
-dependencies = [
- "notan",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -840,9 +833,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.2.4"
+version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "967d6dd42f16dbf0eb8040cb9e477933562684d3918f7d253f2ff9087fb3e7a3"
+checksum = "233cf39063f058ea2caae4091bf4a3ef70a653afbc026f5c4a4135d114e3c177"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -1344,6 +1337,14 @@ dependencies = [
  "getrandom",
  "rand",
  "rand_pcg",
+]
+
+[[package]]
+name = "notan_test"
+version = "0.1.0"
+dependencies = [
+ "notan",
+ "rand",
 ]
 
 [[package]]

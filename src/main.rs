@@ -217,14 +217,31 @@ impl Platform for BasicPlatform {
     }
 }
 
+struct HorizontalMovingPlatform {
+    x: f32,
+    y: f32,
+}
+
+impl Platform for HorizontalMovingPlatform {
+    fn new(x: f32, y: f32) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
+    fn position(&self) -> (f32, f32) {
+        (self.x, self.y)
+    }
+}
+
 fn spawn_platforms(platforms: &mut Vec<PlatformResult>, score: usize) {
-    let mut bit: i8 = 0;
+    // let mut bit: i8 = 0;
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     if score == 0 as usize {
         for i in 0..6 {
             for t in 0..20 {
-                bit = rng.gen_range(0..=4);
-                if bit == 1 {
+                // bit = rng.gen_range(0..=4);
+                if rng.gen_range(0..=4) == 1 {
                     platforms[(i*20)+t] = PlatformResult::BasicPlatform(BasicPlatform::new(i as f32 * 100.0, t as f32 * 30.0));
                 } else {
                     platforms[(i*20)+t] = PlatformResult::Blank;

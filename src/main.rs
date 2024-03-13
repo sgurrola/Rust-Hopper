@@ -31,7 +31,9 @@ fn update(app: &mut App, state: &mut State) {
                 PlatformResult::BasicPlatform(basic_platform) => {
                     basic_platform.y += 10.0;
                 }
-                PlatformResult::Blank(blank_platform) => {}
+                PlatformResult::Blank(blank_platform) => {
+                    blank_platform.y += 10.0;
+                }
             }
         }
         // state.y = state.y + 10.0;
@@ -47,27 +49,20 @@ fn update(app: &mut App, state: &mut State) {
         match platform {
             PlatformResult::BasicPlatform(basic_platform) => {
                 if basic_platform.y > WINDOW_Y as f32 {
-                    // println!("{:?}", state.platform_list);
-                    // println!("{:?}", &platform);
                     basic_platform.y = 0.0;
-                    // let tmp_platform = &spawn_platform(basic_platform.x, 0.0);
-                    // platform = tmp_platform;
-                    // println!("{:?}", &platform);
-                    // println!("");
-                    // println!("{:?}", state.platform_list);
+                    let tmp_platform = spawn_platform(basic_platform.x, basic_platform.y);
+                    *platform = tmp_platform;
                 }
             }
             PlatformResult::Blank(blank_platform) => {
                 if blank_platform.y > WINDOW_Y as f32 {
                     blank_platform.y = 0.0;
-                    // println!("{:?}", &platform);
-                    // let tmp_platform = &spawn_platform(blank_platform.x, 0.0);
-                    // platform = tmp_platform;
-                    // println!("{:?}", &platform);
-                    // println!("");
+                    let tmp_platform = spawn_platform(blank_platform.x, blank_platform.y);
+                    *platform = tmp_platform;
                 }
             }
         }
+        // println!("{:?}", platform);
     }
 }
 
@@ -85,9 +80,8 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         match platform {
             PlatformResult::BasicPlatform(basic_platform) => {
                 draw.rect(basic_platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
-                // println!("{:?}", platform.position());
             }
-            PlatformResult::Blank(blank_platform) => {}
+            PlatformResult::Blank(_blank_platform) => {}
         }
     } 
 
@@ -324,10 +318,8 @@ impl Platform for HorizontalMovingPlatform {
 }
 
 fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
-    // let mut bit: i8 = 0;
     for i in 0..6 {
         for t in 0..20 {
-            // bit = rng.gen_range(0..=4);
             platforms[(i*20)+t] = spawn_platform(i as f32 * 100.0, t as f32 * 30.0);
             
         }
@@ -339,7 +331,7 @@ fn spawn_platform(i: f32, t: f32) -> PlatformResult {
     if rng.gen_range(0..=4) == 1 {
         return PlatformResult::BasicPlatform(BasicPlatform::new(i, t));
     } else {
-        return PlatformResult::Blank(BlankPlatform::new(i, t))
+        return PlatformResult::Blank(BlankPlatform::new(i, t));
     }   
 }
 

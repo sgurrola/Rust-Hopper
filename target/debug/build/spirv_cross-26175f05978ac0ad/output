@@ -119,7 +119,7 @@ cargo:rerun-if-env-changed=ARFLAGS
 ARFLAGS = None
 cargo:rustc-link-search=native=C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.35.32215\atlmfc\lib\x64
 cargo:rustc-link-lib=static=spirv-cross-rust-wrapper
-cargo:rustc-link-search=native=C:\Users\sammy\Downloads\Rust Learning\notan_test\target\debug\build\spirv_cross-26175f05978ac0ad\out
+cargo:rustc-link-search=native=C:\Users\sammy\Downloads\Rust Learning\notan_test\Rust-Hopper\target\debug\build\spirv_cross-26175f05978ac0ad\out
 cargo:rerun-if-env-changed=CXXSTDLIB_x86_64-pc-windows-msvc
 CXXSTDLIB_x86_64-pc-windows-msvc = None
 cargo:rerun-if-env-changed=CXXSTDLIB_x86_64_pc_windows_msvc

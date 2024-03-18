@@ -384,11 +384,20 @@ fn update(app: &mut App, state: &mut State) {
         state.y_vel = MAX_FALL;
     }
     //checks if the players position + the velocity that will be added that frame would be lower than the ground, and if so jump
-    if state.y + (state.y_vel * app.timer.delta_f32()) > TEMP_GROUND {
+    /*if state.y + (state.y_vel * app.timer.delta_f32()) > TEMP_GROUND {
         println!("y {} and vel {} before bounce", state.y, state.y_vel);
         state.y = TEMP_GROUND;
         state.y_vel = BOUNCE_HEIGHT;
         println!("bounce here {}", state.y_vel);
+    }*/
+
+    if state.y_vel >0.0 {
+        for platform in state.platform_list.iter() {
+            if player_plat_collision(state.x, state.y, platform){
+                state.y_vel = BOUNCE_HEIGHT;
+            }
+            
+        }
     }
     
     //this is the screen wrap code from left to right
@@ -499,6 +508,25 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     
 }
 
+fn default_collision( x1 :f32, y1 :f32, w1 :f32, h1 :f32, x2 :f32, y2 :f32, w2 :f32,  h2 :f32) -> bool {
+    if ((x1 + w1) > x2 && x1 < x2) || ((x2 + w2) > x1 && x2 < x1)
+    {
+        if ((y1 + h1) > y2 && y1 < y2) || ((y2 + h2) > y1 && y2 < y1){
+            return true;
+        }
+    }
+    return false;
+}
+
+fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool{
+    match platEnum{
+        PlatformResult::BasicPlatform(plat) => {
+            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
+        }
+        PlatformResult::Blank => {return false;}
+    }
+    
+}
 // #[derive(AppState)]
 // struct State {
 //     platform_list: Vec<PlatformResult>,

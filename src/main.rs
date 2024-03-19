@@ -17,8 +17,8 @@ struct State {
     shoot:bool,
     facing:f32,
     platform_list: Vec<PlatformResult>,
-
-    
+    proj_text: Texture,
+    projectiles: Vec<Projectile>,
     //anim: Option<Box<dyn AnimState>>
 
 }
@@ -177,6 +177,12 @@ fn init(gfx: &mut Graphics) -> State {
     .build()
     .unwrap();
 
+    let proj_text = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/cat-basket.png"))
+        .build()
+        .unwrap();
+
     let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
     State {
@@ -191,6 +197,8 @@ fn init(gfx: &mut Graphics) -> State {
         anims: vec![temp, temp1],
         shoot: false,
         facing: 1.0,
+        projectiles: vec![],
+        proj_text,
         platform_list: vec![
                 PlatformResult::Blank,
                 PlatformResult::Blank,
@@ -465,6 +473,12 @@ fn update(app: &mut App, state: &mut State) {
             }
         }
      }
+     if app.keyboard.is_down(KeyCode::Space) {
+        shoot_projectile(state);
+        println!("pew pew");
+    }
+
+     update_projectiles(state, app.timer.delta_f32());
     
 }
 
@@ -479,6 +493,8 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     draw.image(thing).size(state.facing * PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
+    
+    draw.image(&state.proj_text).size(5.0,5.0).position(state.x, state.y);
 
     spawn_platforms(&mut state.platform_list, state.score as usize);
     if state.score == 0.0 
@@ -695,3 +711,53 @@ fn spawn_platforms(platforms: &mut Vec<PlatformResult>, score: usize) {
 //         (self.x, self.y)
 //     }
 // }
+
+struct Projectile {
+    x: f32,
+    y: f32,
+    velocity: f32,
+    direction: f32,
+    proj_text: Texture,
+}
+
+impl Projectile {
+    fn new(x: f32, y: f32, velocity: f32, direction: f32, proj_text: Texture) -> Self{
+        Self {
+            x,
+            y,
+            velocity,
+            direction,
+            proj_text,
+        }
+    }
+
+    fn update(&mut self, dt: f32) {
+        // Update projectile position based on velocity and direction
+        self.x += self.velocity * self.direction.cos() * dt;
+        self.y += self.velocity * self.direction.sin() * dt;
+    }
+}
+
+fn shoot_projectile(state: &mut State) {
+    let x = state.x;
+    let y = state.y;
+    let velocity = -500.0; // Adjust velocity as needed
+    let direction = state.facing; // Use player's facing direction
+
+    let projectile = Projectile::new(x, y, velocity, direction, state.proj_text.clone());
+    state.projectiles.push(projectile);
+}
+
+fn update_projectiles(state: &mut State, dt: f32) {
+    // Update all projectiles
+    for projectile in &mut state.projectiles {
+        projectile.update(dt);
+    }
+
+    // Remove projectiles that are out of bounds
+    state.projectiles.retain(|projectile| {
+        let x = projectile.x;
+        let y = projectile.y;
+        x > 0.0 && x < WINDOW_X as f32 && y > 0.0 && y < WINDOW_Y as f32
+    });
+}

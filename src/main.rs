@@ -448,6 +448,21 @@ fn update(app: &mut App, state: &mut State) {
     //didn't realize I had this code here twice, will delete later but physics are currently tuned with this
     state.y += state.y_vel * app.timer.delta_f32();
 
+    if state.y < 300.0 {
+        let dist = 290.0 *app.timer.delta_f32();
+        state.y += dist;
+        for platform in state.platform_list.iter_mut() {
+            match platform {
+                PlatformResult::BasicPlatform(ref mut platform) => {
+                    platform.y += dist;
+                }
+                PlatformResult::Blank(ref mut platform) => {
+                    platform.y += dist;
+                }
+                _ => {}
+            }
+        } 
+    }
     //This moves the platforms up if the player is moving up and is in the top 2/3rds of the screen
     if state.y < 500.0 && state.y_vel < 0.0 {
         for platform in state.platform_list.iter_mut() {
@@ -464,7 +479,13 @@ fn update(app: &mut App, state: &mut State) {
         state.offset -= state.y_vel * app.timer.delta_f32();
     }
 
-    
+    if state.y > WINDOW_Y as f32 + 20.0{
+        state.score = 0;
+        state.x = 300.0;
+        state.y = 300.0;
+        state.y_vel = 0.0;
+        state.x_vel = 0.0;
+    }
 
      match state.anims[state.anim]{
         Anims::Idle(ref mut anime, i) => {

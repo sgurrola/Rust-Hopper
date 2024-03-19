@@ -11,12 +11,13 @@ struct State {
     x_vel: f32, //players velocity in x direction
     y_vel: f32, //players velocity in y direction
     offset: f32, //test for fake camera
-    score: f32,
+    score: i32,
     anims: Vec<Anims>,
     anim: usize,
     shoot:bool,
     facing:f32,
     platform_list: Vec<PlatformResult>,
+    platform_direction: bool,
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -108,6 +109,8 @@ const CROSS_ACCEL: f32 = 2.0; // acceleration boost for going in opposite direct
 const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
+const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
+const _WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
 const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
@@ -186,133 +189,134 @@ fn init(gfx: &mut Graphics) -> State {
         x_vel: 0.0,
         y_vel:0.0,
         offset:0.0,
-        score:0.0,
+        score:0,
         anim:0,
         anims: vec![temp, temp1],
         shoot: false,
         facing: 1.0,
         platform_list: vec![
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
-                PlatformResult::Blank,
+                PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 0.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 30.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 60.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 90.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 120.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 150.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 180.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 210.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 240.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 270.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 300.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 330.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 360.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 390.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 420.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 450.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 480.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 510.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 540.0)),
+                PlatformResult::Blank(BlankPlatform::new(0.0, 570.0)),
+                PlatformResult::Blank(BlankPlatform::new(100.0, 570.0)),
+                PlatformResult::Blank(BlankPlatform::new(200.0, 570.0)),
+                PlatformResult::Blank(BlankPlatform::new(300.0, 570.0)),
+                PlatformResult::Blank(BlankPlatform::new(400.0, 570.0)),
+                PlatformResult::Blank(BlankPlatform::new(500.0, 570.0)),
             ],
+            platform_direction: true,
     }
 }
 
@@ -390,10 +394,40 @@ fn update(app: &mut App, state: &mut State) {
         state.y_vel = BOUNCE_HEIGHT;
         println!("bounce here {}", state.y_vel);
     }*/
-
+    for platform in state.platform_list.iter_mut() {
+        match platform {
+            PlatformResult::BasicPlatform(basic_platform) => {
+                if basic_platform.y > WINDOW_Y as f32 {
+                    basic_platform.y = 0.0;
+                    let tmp_platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
+                    *platform = tmp_platform;
+                    state.score += 1;
+                }
+            }
+            PlatformResult::Blank(blank_platform) => {
+                if blank_platform.y > WINDOW_Y as f32 {
+                    blank_platform.y = 0.0;
+                    let tmp_platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
+                    *platform = tmp_platform;
+                }
+            }
+            PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
+                if horizontal_platform.x == 0.0 {
+                    state.platform_direction = true;
+                } else if horizontal_platform.x == WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                    state.platform_direction = false;
+                }
+                horizontal_platform.shift(state.platform_direction);
+            }
+        }
+    }
     if state.y_vel >0.0 {
+        let mut thing: f32 = 0.0;
+        if(state.facing > 0.0){
+            thing = PLAYER_WIDTH * -1.0;
+        }
         for platform in state.platform_list.iter() {
-            if player_plat_collision(state.x, state.y, platform){
+            if player_plat_collision(state.x + thing, state.y, platform){
                 state.y_vel = BOUNCE_HEIGHT;
             }
             
@@ -421,16 +455,16 @@ fn update(app: &mut App, state: &mut State) {
                 PlatformResult::BasicPlatform(ref mut platform) => {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
-                PlatformResult::Blank => {}
+                PlatformResult::Blank(ref mut platform) => {
+                    platform.y -= state.y_vel * app.timer.delta_f32();
+                }
+                _ => {}
             }
         } 
         state.offset -= state.y_vel * app.timer.delta_f32();
     }
 
-    if state.y_vel < 0.0 {
-        state.score -= state.y_vel * app.timer.delta_f32() * 0.1;
-        println!("score is {}", state.score)
-    }
+    
 
      match state.anims[state.anim]{
         Anims::Idle(ref mut anime, i) => {
@@ -489,19 +523,23 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
 
-    spawn_platforms(&mut state.platform_list, state.score as usize);
-    if state.score == 0.0 
+    
+    if state.score == 0 
     {
-        state.score = 1.0;
+        spawn_platforms(&mut state.platform_list);
+        state.score = 1;
     }
     for platform in state.platform_list.iter() {
         match platform {
-            PlatformResult::BasicPlatform(platform) => {
-                draw.rect(platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+            PlatformResult::BasicPlatform(basic_platform) => {
+                draw.rect(basic_platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
             }
-            PlatformResult::Blank => {}
+            PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
+                draw.rect(horizontal_platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+            }
+            PlatformResult::Blank(_blank_platform) => {}
         }
-    } 
+    }  
 
     // draw.rect(state.jumpy_boi.position(), (PLAYER_WIDTH, PLAYER_HEIGHT));
     gfx.render(&draw);
@@ -523,7 +561,8 @@ fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool
         PlatformResult::BasicPlatform(plat) => {
             return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
         }
-        PlatformResult::Blank => {return false;}
+        PlatformResult::Blank(play) => {return false;}
+        _ => {return false;}
     }
     
 }
@@ -668,11 +707,32 @@ trait Platform {
     fn position(&self) -> (f32, f32);
 }
 
+#[derive(Debug)]
 enum PlatformResult {
     BasicPlatform(BasicPlatform),
-    Blank,
+    HorizontalMovingPlatform(HorizontalMovingPlatform),
+    Blank(BlankPlatform),
 }
 
+#[derive(Debug)]
+struct BlankPlatform {
+    x: f32,
+    y: f32,
+}
+
+impl Platform for BlankPlatform {
+    fn new(x: f32, y: f32) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
+    fn position(&self) -> (f32, f32) {
+        (self.x, self.y)
+    }
+}
+
+#[derive(Debug)]
 struct BasicPlatform {
     x: f32,
     y: f32,
@@ -690,21 +750,80 @@ impl Platform for BasicPlatform {
     }
 }
 
-fn spawn_platforms(platforms: &mut Vec<PlatformResult>, score: usize) {
-    let mut bit: i8 = 0;
-    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    if score == 0 as usize {
-        for i in 0..6 {
-            for t in 0..20 {
-                bit = rng.gen_range(0..=4);
-                if bit == 1 {
-                    platforms[(i*20)+t] = PlatformResult::BasicPlatform(BasicPlatform::new(i as f32 * 100.0, t as f32 * 30.0));
-                } else {
-                    platforms[(i*20)+t] = PlatformResult::Blank;
-                }
-            }
+// impl BasicPlatform {
+//     fn get_x(&self) -> f32 {
+//         self.x
+//     }
+//     fn get_y(&self) -> f32 {
+//         self.y
+//     }
+//     fn set_x(&self, x: f32) -> Self {
+//         Self {
+//             x: self.x + x,
+//             y: self.y,
+//         }
+//     }
+//     fn set_y(&mut self, y: f32) -> Self {
+//         Self {
+//             x: self.x,
+//             y: self.y + y,
+//         }
+//     }
+// }
+
+#[derive(Debug)]
+struct HorizontalMovingPlatform {
+    x: f32,
+    y: f32,
+}
+
+impl Platform for HorizontalMovingPlatform {
+    fn new(x: f32, y: f32) -> Self {
+        Self {
+            x,
+            y,
         }
     }
+    fn position(&self) -> (f32, f32) {
+        (self.x, self.y)
+    }
+}
+
+impl HorizontalMovingPlatform {
+    fn shift(&mut self, direction: bool) {
+        if direction {
+            self.x += 10.0;
+        } else {
+            self.x -= 10.0;
+        }
+    }
+}
+
+fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    for i in 0..6 {
+        for t in 0..20 {
+            if rng.gen_range(0..=4) == 1 {
+                platforms[(i*20)+t] = PlatformResult::BasicPlatform(BasicPlatform::new(i as f32 * 100.0, t as f32 * 30.0));
+            } else {
+                platforms[(i*20)+t] = PlatformResult::Blank(BlankPlatform::new(i as f32 * 100.0, t as f32 * 30.0));
+            }   
+        }
+    }
+}
+
+fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    // very rudimentary formula for when score gets larger to spawn in less platforms 
+    // score is increasing when a platform goes by
+    let random = rng.gen_range(0..=(score));
+    if random == 1 || random == 2 {
+        return PlatformResult::BasicPlatform(BasicPlatform::new(i, t));
+    } else if random == 3 {
+        return PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(i, t));
+    } else {
+        return PlatformResult::Blank(BlankPlatform::new(i, t));
+    }   
 }
 
 // struct JumpyBoi {

@@ -18,6 +18,8 @@ struct State {
     facing:f32,
     platform_list: Vec<PlatformResult>,
     platform_direction: bool,
+    proj_text: Texture,
+    projectiles: Vec<Projectile>,
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -180,6 +182,12 @@ fn init(gfx: &mut Graphics) -> State {
     .build()
     .unwrap();
 
+    let proj_text = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/cat-basket.png"))
+        .build()
+        .unwrap();
+
     let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
     State {
@@ -194,6 +202,8 @@ fn init(gfx: &mut Graphics) -> State {
         anims: vec![temp, temp1],
         shoot: false,
         facing: 1.0,
+        projectiles: vec! [],
+        proj_text,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -448,6 +458,22 @@ fn update(app: &mut App, state: &mut State) {
     //didn't realize I had this code here twice, will delete later but physics are currently tuned with this
     state.y += state.y_vel * app.timer.delta_f32();
 
+    if state.y < 300.0 {
+        let dist = 290.0 *app.timer.delta_f32();
+        state.y += dist;
+        for platform in state.platform_list.iter_mut() {
+            match platform {
+                PlatformResult::BasicPlatform(ref mut platform) => {
+                    platform.y += dist;
+                }
+                PlatformResult::Blank(ref mut platform) => {
+                    platform.y += dist;
+                }
+                _ => {}
+            }
+        } 
+    }
+
     //This moves the platforms up if the player is moving up and is in the top 2/3rds of the screen
     if state.y < 500.0 && state.y_vel < 0.0 {
         for platform in state.platform_list.iter_mut() {
@@ -464,6 +490,13 @@ fn update(app: &mut App, state: &mut State) {
         state.offset -= state.y_vel * app.timer.delta_f32();
     }
 
+    if state.y > WINDOW_Y as f32 + 20.0{
+        state.score = 0;
+        state.x = 300.0;
+        state.y = 300.0;
+        state.y_vel = 0.0;
+        state.x_vel = 0.0;
+    }
     
 
      match state.anims[state.anim]{
@@ -508,6 +541,14 @@ fn update(app: &mut App, state: &mut State) {
             }
         }
      }
+
+     if app.keyboard.is_down(KeyCode::Space) {
+        shoot_projectile(state);
+        println!("pew pew");
+    }
+
+
+     update_projectiles(state, app.timer.delta_f32());
     
 }
 
@@ -523,6 +564,12 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
 
+    for projectile in &state.projectiles {
+        draw.image(&projectile.proj_text)
+            .size(20.0, 20.0)
+            .position(projectile.x, projectile.y);
+    }
+    //draw.image(&state.proj_text).size(20.0,20.0).position(state.x, state.y);
     
     if state.score == 0 
     {
@@ -842,3 +889,58 @@ fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
 //         (self.x, self.y)
 //     }
 // }
+
+struct Projectile {
+    x: f32,
+    y: f32,
+    velocity: f32,
+    direction: f32,
+    proj_text: Texture,
+}
+
+
+impl Projectile {
+    fn new(x: f32, y: f32, velocity: f32, direction: f32, proj_text: Texture) -> Self{
+        Self {
+            x,
+            y,
+            velocity,
+            direction,
+            proj_text,
+        }
+    }
+
+
+    fn update(&mut self, dt: f32) {
+        // Update projectile position based on velocity and direction
+        self.x += self.velocity * self.direction.cos() * dt;
+        self.y += self.velocity * self.direction.sin() * dt;
+    }
+}
+
+fn shoot_projectile(state: &mut State) { //need to add delay
+    let x = state.x;
+    let y = state.y;
+    let velocity = -500.0;
+    let direction = 1.0; // Use player's facing direction (not rn)
+    //only shoots towards left
+
+
+    let projectile = Projectile::new(x, y, velocity, direction, state.proj_text.clone());
+    state.projectiles.push(projectile);
+}
+
+fn update_projectiles(state: &mut State, dt: f32) {
+    // Update all projectiles
+    for projectile in &mut state.projectiles {
+        projectile.update(dt);
+    }
+
+
+    // Remove projectiles that are out of bounds
+    state.projectiles.retain(|projectile| {
+        let x = projectile.x;
+        let y = projectile.y;
+        x > 0.0 && x < WINDOW_X as f32 && y > 0.0 && y < WINDOW_Y as f32
+    });
+}

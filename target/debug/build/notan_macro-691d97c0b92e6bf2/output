@@ -1,2 +1,0 @@
-cargo:rustc-cfg=use_glsl_to_spirv
-cargo:rustc-cfg=shader_compilation

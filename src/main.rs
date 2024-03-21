@@ -202,7 +202,7 @@ fn init(gfx: &mut Graphics) -> State {
         anims: vec![temp, temp1],
         shoot: false,
         facing: 1.0,
-        projectiles: vec! [],
+        projectiles: vec![],
         proj_text,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
@@ -546,7 +546,6 @@ fn update(app: &mut App, state: &mut State) {
         shoot_projectile(state);
         println!("pew pew");
     }
-
 
      update_projectiles(state, app.timer.delta_f32());
     

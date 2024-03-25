@@ -65,11 +65,11 @@ fn update(app: &mut App, state: &mut State) {
             }
             PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
                 if horizontal_platform.x == 0.0 {
-                    state.platform_direction = true;
+                    horizontal_platform.direction = true;
                 } else if horizontal_platform.x == WINDOW_X_FLOAT - PLATFORM_WIDTH {
-                    state.platform_direction = false;
+                    horizontal_platform.direction = false;
                 }
-                horizontal_platform.shift(state.platform_direction);
+                horizontal_platform.shift(horizontal_platform.direction);
             }
         }
     }
@@ -107,7 +107,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
 struct State {
     platform_list: Vec<PlatformResult>,
     score: i32,
-    platform_direction: bool,
 }
 
 impl State {
@@ -236,7 +235,6 @@ impl State {
                 PlatformResult::Blank(BlankPlatform::new(500.0, 570.0)),
             ],
             score: 0,
-            platform_direction: true,
         }
     }
 }
@@ -314,6 +312,7 @@ impl Platform for BasicPlatform {
 struct HorizontalMovingPlatform {
     x: f32,
     y: f32,
+    direction: bool,
 }
 
 impl Platform for HorizontalMovingPlatform {
@@ -321,6 +320,7 @@ impl Platform for HorizontalMovingPlatform {
         Self {
             x,
             y,
+            direction: true,
         }
     }
     fn position(&self) -> (f32, f32) {

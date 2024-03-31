@@ -1,6 +1,7 @@
 use notan::prelude::*;
 use notan::draw::*;
 use rand::Rng;
+use std::time::{Duration, Instant};
 
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
 #[derive(AppState)]
@@ -21,6 +22,8 @@ struct State {
     proj_text: Texture,
     projectiles: Vec<Projectile>,
     enemy_list: Vec<EnemyResult>,
+    last_shot_time: Instant, // Track the time of the last shot
+    fire_delay: Duration, // Define the firing delay duration
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -191,6 +194,12 @@ fn init(gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
+    let display_text: Texture = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/python_enemy.png"))
+        .build()
+        .unwrap();
+
     let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
     State {
@@ -207,6 +216,8 @@ fn init(gfx: &mut Graphics) -> State {
         facing: 1.0,
         projectiles: vec![],
         proj_text,
+        last_shot_time: Instant::now(), // Initialize last shot time to the current time
+        fire_delay: Duration::from_millis(100), // Set the firing delay
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -331,117 +342,128 @@ fn init(gfx: &mut Graphics) -> State {
             ],
         platform_direction: true,
         enemy_list: vec![
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 15.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 45.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 75.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 105.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 135.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 165.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 195.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 225.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 255.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 285.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 315.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 345.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 375.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 405.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 435.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 465.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 495.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 525.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 525.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 525.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 525.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 525.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 525.0))
+                /*EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 0.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 30.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 60.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 90.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 120.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 120.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 120.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 120.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 120.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 120.0)),*/
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 150.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 180.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 210.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 240.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 270.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 300.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 330.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 360.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 390.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 420.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 450.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 480.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 510.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 540.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 570.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 570.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 570.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 570.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 570.0)),
+                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 570.0)),
             ],
-        
-    }
+    } 
 }
 
 //this is the logic that runs each frame
@@ -582,6 +604,12 @@ fn update(app: &mut App, state: &mut State) {
             if player_enemy_collision(state.x + thing, state.y, enemy){
                 state.y_vel = BOUNCE_HEIGHT;
                 println!("enemy hit!");
+                    state.score = 0;
+                    state.x = 300.0;
+                    state.y = 300.0;
+                    state.y_vel = 0.0;
+                    state.x_vel = 0.0;
+    
             }
             
         }
@@ -702,7 +730,6 @@ fn update(app: &mut App, state: &mut State) {
 
      if app.keyboard.is_down(KeyCode::Space) {
         shoot_projectile(state);
-        println!("pew pew");
     }
 
      update_projectiles(state, app.timer.delta_f32());
@@ -726,6 +753,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             .size(20.0, 20.0)
             .position(projectile.x, projectile.y);
     }
+
     //draw.image(&state.proj_text).size(20.0,20.0).position(state.x, state.y);
     if state.score == 0 
     {
@@ -735,11 +763,11 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     for enemy in state.enemy_list.iter() {
         match enemy {
             EnemyResult::BasicEnemy(basic_enemy) => {
-                draw.rect(basic_enemy.position(), (ENEMY_WIDTH, ENEMY_HEIGHT));
+                draw.rect(basic_enemy.position(), (ENEMY_WIDTH, ENEMY_HEIGHT),);
             }
             EnemyResult::BlankEnemy(_blank_enemy) => {}
         }
-    }  
+    } 
 
     if state.score == 0 
     {
@@ -794,6 +822,32 @@ fn player_enemy_collision( px :f32, py :f32,  enem_enum : &EnemyResult) -> bool{
     }
     
 }
+/* 
+fn handle_collisions(projectiles: &mut Vec<Projectile>, enemies: &mut Vec<EnemyResult>) {
+    // Iterate through projectiles
+    for projectile in projectiles.iter() {
+        // Iterate through enemies
+        for enemy in enemies.iter_mut() {
+            if let EnemyResult::BasicEnemy(basic_enemy) = enemy {
+                // Check collision between projectile and basic enemy
+                if is_collision(projectile, basic_enemy) {
+                    // Replace the enemy with a blank enemy
+                    *enemy = EnemyResult::BlankEnemy(BlankEnemy::new(basic_enemy.x, basic_enemy.y));
+                    // Despawn the projectile
+                    // (Implementation depends on how projectiles are managed)
+                    // Example: projectile.despawn();
+                }
+            }
+        }
+    }
+}
+
+fn is_collision(projectile: &Projectile, enemy: &BasicEnemy) -> bool {
+    // Check collision logic here
+    // (e.g., AABB collision detection, circle collision detection, etc.)
+    // Return true if collision occurs, false otherwise
+    return true;
+} */
 
 
 // #[derive(AppState)]
@@ -1102,15 +1156,27 @@ impl Projectile {
 }
 
 fn shoot_projectile(state: &mut State) { //need to add delay
+    let time_since_last_shot = Instant::now().duration_since(state.last_shot_time);
+
+    // Check if enough time has passed since the last shot
+    if time_since_last_shot >= state.fire_delay {
+        // If enough time has passed, update the last shot time
+        state.last_shot_time = Instant::now();
+
+    let direction_shift;
     let x = state.x;
     let y = state.y;
     let velocity = -500.0;
-    let direction = 1.0; // Use player's facing direction (not rn)
+    if state.facing > 0.0 {direction_shift = 0.7}
+    else if state.facing < 0.0 {direction_shift = -0.7}
+    else {direction_shift = 0.0}
+    let direction = 1.57 + direction_shift; // Use player's facing direction (not rn)
     //only shoots towards left
 
 
     let projectile = Projectile::new(x, y, velocity, direction, state.proj_text.clone());
-    state.projectiles.push(projectile);
+    state.projectiles.push(projectile); 
+    }
 }
 
 fn update_projectiles(state: &mut State, dt: f32) {
@@ -1145,7 +1211,7 @@ struct BlankEnemy {
     y: f32,
 }
 
-impl Platform for BlankEnemy {
+impl Enemy for BlankEnemy {
     fn new(x: f32, y: f32) -> Self {
         Self {
             x,
@@ -1163,7 +1229,7 @@ struct BasicEnemy {
     y: f32,
 }
 
-impl Platform for BasicEnemy {
+impl Enemy for BasicEnemy {
     fn new(x: f32, y: f32) -> Self {
         Self {
             x,
@@ -1175,27 +1241,31 @@ impl Platform for BasicEnemy {
     }
 }
 
+
 fn spawn_enemies(enemies: &mut Vec<EnemyResult>) {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     for i in 0..6 {
-        for t in 0..16 /*(15..=15+10*30).step_by(30) */{
+        for t in 5..20 {
             if rng.gen_range(0..=4) == 1 {
-                enemies[(i*20)+(t+15)] = EnemyResult::BasicEnemy(BasicEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
+                enemies[(i*20)+t] = EnemyResult::BasicEnemy(BasicEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
             } else {
-                enemies[(i*20)+(t+15)] = EnemyResult::BlankEnemy(BlankEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
-            }   
+                enemies[(i*20)+t] = EnemyResult::BlankEnemy(BlankEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
+            } 
         }
     }
-}
+} 
 
 fn spawn_enemy(i: f32, t: f32, score: i32) -> EnemyResult {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     // very rudimentary formula for when score gets larger to spawn in less platforms 
     // score is increasing when a platform goes by
-    let random = rng.gen_range(0..=(score));
-    if random == 1 || random == 2 {
+    //let spawn_chance = (score / 50) + 1; // Adjust the divisor for different spawning rates
+    let random = rng.gen_range(1.. (1000 - score));
+    if random == 50 {
         return EnemyResult::BasicEnemy(BasicEnemy::new(i, t));
     } else {
         return EnemyResult::BlankEnemy(BlankEnemy::new(i, t));
     }   
 }
+
+

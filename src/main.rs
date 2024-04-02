@@ -5,7 +5,7 @@ use rand::Rng;
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
 const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
-const _WINDOW_Y_FLOAT: f32 = 800.0;
+const WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
 // const PLATFORM_SPEED: f32 = 20.0;
@@ -41,35 +41,35 @@ fn update(app: &mut App, state: &mut State) {
                 }
             }
         }
-        // state.y = state.y + 10.0;
-    } else if app.keyboard.is_down(KeyCode::S) {
-        // state.platform_1.y = state.platform_1.y + PLATFORM_SPEED;
     }
 
     for platform in state.platform_list.iter_mut() {
         match platform {
             PlatformResult::BasicPlatform(basic_platform) => {
-                if basic_platform.y > WINDOW_Y as f32 {
+                if basic_platform.y > WINDOW_Y_FLOAT {
                     basic_platform.y = 0.0;
-                    let tmp_platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
-                    *platform = tmp_platform;
+                    *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
                     state.score += 1;
                 }
             }
             PlatformResult::Blank(blank_platform) => {
-                if blank_platform.y > WINDOW_Y as f32 {
+                if blank_platform.y > WINDOW_Y_FLOAT {
                     blank_platform.y = 0.0;
-                    let tmp_platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
-                    *platform = tmp_platform;
+                    *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
                 }
             }
             PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
-                if horizontal_platform.x == 0.0 {
+                if horizontal_platform.x <= 0.0 {
                     horizontal_platform.direction = true;
-                } else if horizontal_platform.x == WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
                     horizontal_platform.direction = false;
                 }
                 horizontal_platform.shift(horizontal_platform.direction);
+
+                if horizontal_platform.y > WINDOW_Y_FLOAT {
+                    horizontal_platform.y = 0.0;
+                    *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
+                }
             }
         }
     }
@@ -96,11 +96,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         }
     } 
 
-    // draw.rect((state.x, state.y), (100.0, 100.0));
-
-    // draw.rect(state.jumpy_boi.position(), (PLAYER_WIDTH, PLAYER_HEIGHT));
     gfx.render(&draw);
-    
 }
 
 #[derive(AppState)]
@@ -287,32 +283,12 @@ impl Platform for BasicPlatform {
     }
 }
 
-// impl BasicPlatform {
-//     fn get_x(&self) -> f32 {
-//         self.x
-//     }
-//     fn get_y(&self) -> f32 {
-//         self.y
-//     }
-//     fn set_x(&self, x: f32) -> Self {
-//         Self {
-//             x: self.x + x,
-//             y: self.y,
-//         }
-//     }
-//     fn set_y(&mut self, y: f32) -> Self {
-//         Self {
-//             x: self.x,
-//             y: self.y + y,
-//         }
-//     }
-// }
-
 #[derive(Debug)]
 struct HorizontalMovingPlatform {
     x: f32,
     y: f32,
     direction: bool,
+    delta: f32,
 }
 
 impl Platform for HorizontalMovingPlatform {
@@ -321,6 +297,7 @@ impl Platform for HorizontalMovingPlatform {
             x,
             y,
             direction: true,
+            delta: generate_move_delta(),
         }
     }
     fn position(&self) -> (f32, f32) {
@@ -331,12 +308,16 @@ impl Platform for HorizontalMovingPlatform {
 impl HorizontalMovingPlatform {
     fn shift(&mut self, direction: bool) {
         if direction {
-            self.x += 10.0;
+            self.x += self.delta;
         } else {
-            self.x -= 10.0;
+            self.x -= self.delta;
         }
     }
 }
+
+// struct verticalMovingPlatform {
+
+// }
 
 fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
@@ -355,29 +336,26 @@ fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     // very rudimentary formula for when score gets larger to spawn in less platforms 
     // score is increasing when a platform goes by
-    let random = rng.gen_range(0..=(score));
+    let random: i32 = rng.gen_range(0..=(score));
     if random == 1 || random == 2 {
         return PlatformResult::BasicPlatform(BasicPlatform::new(i, t));
     } else if random == 3 {
-        return PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(i, t));
+        let platform: PlatformResult = PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(i, t)); 
+        return platform;
     } else {
         return PlatformResult::Blank(BlankPlatform::new(i, t));
     }   
 }
 
-// struct JumpyBoi {
-//     x: f32,
-//     y: f32,
+fn generate_move_delta() -> f32 {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    let delta: f32 = rng.gen_range(1.0..=7.0);
+    delta
+}
+
+// fn check_proximity(platform_index: i32, platform_list: Vec<PlatformResult>) -> bool {
+
+//     true
 // }
 
-// impl JumpyBoi {
-//     fn new(x: f32, y: f32) -> Self {
-//         Self {
-//             x,
-//             y,
-//         }
-//     }
-//     fn position(&self) -> (f32, f32) {
-//         (self.x, self.y)
-//     }
-// }
+// maybe make everything a 2d array of platform results and grab the first x value to dictate the rest of them

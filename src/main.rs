@@ -3,6 +3,14 @@ use notan::draw::*;
 use rand::Rng;
 use std::time::{Duration, Instant};
 
+mod projectiles;
+use projectiles::Projectile;
+
+mod enemies;
+use enemies::Enemy;
+
+use crate::enemies::spawn_enemy;
+
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
 #[derive(AppState)]
 struct State {
@@ -21,9 +29,10 @@ struct State {
     platform_direction: bool,
     proj_text: Texture,
     projectiles: Vec<Projectile>,
-    enemy_list: Vec<EnemyResult>,
     last_shot_time: Instant, // Track the time of the last shot
     fire_delay: Duration, // Define the firing delay duration
+    enemy_text: Texture,
+    enemies: Vec<Enemy>,
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -119,8 +128,6 @@ const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
 const _WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
-const ENEMY_WIDTH: f32 = 20.0;
-const ENEMY_HEIGHT: f32 = 20.0;
 const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
 const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
 const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
@@ -194,9 +201,9 @@ fn init(gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
-    let display_text: Texture = gfx
+    let enemy_text = gfx
         .create_texture()
-        .from_image(include_bytes!("assets/python_enemy.png"))
+        .from_image(include_bytes!("assets/python_icon.png"))
         .build()
         .unwrap();
 
@@ -218,6 +225,8 @@ fn init(gfx: &mut Graphics) -> State {
         proj_text,
         last_shot_time: Instant::now(), // Initialize last shot time to the current time
         fire_delay: Duration::from_millis(100), // Set the firing delay
+        enemies: vec![],
+        enemy_text,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -341,129 +350,7 @@ fn init(gfx: &mut Graphics) -> State {
                 PlatformResult::Blank(BlankPlatform::new(500.0, 570.0)),
             ],
         platform_direction: true,
-        enemy_list: vec![
-                /*EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 0.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 30.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 60.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 90.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 120.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 120.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 120.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 120.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 120.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 120.0)),*/
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 150.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 180.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 210.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 240.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 270.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 300.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 330.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 360.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 390.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 420.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 450.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 480.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 510.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 540.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(0.0, 570.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(100.0, 570.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(200.0, 570.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(300.0, 570.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(400.0, 570.0)),
-                EnemyResult::BlankEnemy(BlankEnemy::new(500.0, 570.0)),
-            ],
-    } 
+} 
 }
 
 //this is the logic that runs each frame
@@ -568,26 +455,6 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
-    for enemy in state.enemy_list.iter_mut() {
-        match enemy {
-            EnemyResult::BasicEnemy(basic_enemy) => {
-                if basic_enemy.y > WINDOW_Y as f32 {
-                    basic_enemy.y = 0.0;
-                    let tmp_enemy = spawn_enemy(basic_enemy.x, basic_enemy.y, state.score);
-                    *enemy = tmp_enemy;
-                    state.score += 1;
-                }
-            }
-            EnemyResult::BlankEnemy(blank_enemy) => {
-                if blank_enemy.y > WINDOW_Y as f32 {
-                    blank_enemy.y = 0.0;
-                    let tmp_enemy = spawn_enemy(blank_enemy.x, blank_enemy.y, state.score);
-                    *enemy = tmp_enemy;
-                }
-            }
-        }
-    }
-
     if state.y_vel >0.0 {
         let mut thing: f32 = 0.0;
         if(state.facing > 0.0){
@@ -596,20 +463,6 @@ fn update(app: &mut App, state: &mut State) {
         for platform in state.platform_list.iter() {
             if player_plat_collision(state.x + thing, state.y, platform){
                 state.y_vel = BOUNCE_HEIGHT;
-            }
-            
-        }
-
-        for enemy in state.enemy_list.iter() {
-            if player_enemy_collision(state.x + thing, state.y, enemy){
-                state.y_vel = BOUNCE_HEIGHT;
-                println!("enemy hit!");
-                    state.score = 0;
-                    state.x = 300.0;
-                    state.y = 300.0;
-                    state.y_vel = 0.0;
-                    state.x_vel = 0.0;
-    
             }
             
         }
@@ -656,21 +509,6 @@ fn update(app: &mut App, state: &mut State) {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
                 _ => {}
-            }
-        } 
-        state.offset -= state.y_vel * app.timer.delta_f32();
-    }
-
-    //same thing for enemies
-    if state.y < 500.0 && state.y_vel < 0.0 {
-        for enemy in state.enemy_list.iter_mut() {
-            match enemy {
-                EnemyResult::BasicEnemy(ref mut enemy) => {
-                    enemy.y -= state.y_vel * app.timer.delta_f32();
-                }
-                EnemyResult::BlankEnemy(ref mut enemy) => {
-                    enemy.y -= state.y_vel * app.timer.delta_f32();
-                }
             }
         } 
         state.offset -= state.y_vel * app.timer.delta_f32();
@@ -729,10 +567,17 @@ fn update(app: &mut App, state: &mut State) {
      }
 
      if app.keyboard.is_down(KeyCode::Space) {
-        shoot_projectile(state);
+        projectiles::shoot_projectile(state);
     }
 
-     update_projectiles(state, app.timer.delta_f32());
+    projectiles::update_projectiles(state, app.timer.delta_f32());
+    println!("x_vel: {}, score: {}", state.x_vel, state.score); // Debugging
+
+    if (state.score % 20 == 0) && state.score > 0{
+        println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    }
     
 }
 
@@ -754,20 +599,13 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             .position(projectile.x, projectile.y);
     }
 
-    //draw.image(&state.proj_text).size(20.0,20.0).position(state.x, state.y);
-    if state.score == 0 
-    {
-        spawn_enemies(&mut state.enemy_list);
-        state.score = 1;
+    for enemies in &state.enemies {
+        draw.image(&enemies.enemy_text)
+            .size(20.0, 20.0)
+            .position(enemies.x, enemies.y);
     }
-    for enemy in state.enemy_list.iter() {
-        match enemy {
-            EnemyResult::BasicEnemy(basic_enemy) => {
-                draw.rect(basic_enemy.position(), (ENEMY_WIDTH, ENEMY_HEIGHT),);
-            }
-            EnemyResult::BlankEnemy(_blank_enemy) => {}
-        }
-    } 
+
+    //draw.image(&state.proj_text).size(20.0,20.0).position(state.x, state.y);
 
     if state.score == 0 
     {
@@ -811,43 +649,6 @@ fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool
     }
     
 }
-
-fn player_enemy_collision( px :f32, py :f32,  enem_enum : &EnemyResult) -> bool{
-    match enem_enum{
-        EnemyResult::BasicEnemy(enemy) => {
-            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, enemy.x, enemy.y, ENEMY_WIDTH, ENEMY_HEIGHT);
-        }
-        EnemyResult::BlankEnemy(play) => {return false;}
-        _ => {return false;}
-    }
-    
-}
-/* 
-fn handle_collisions(projectiles: &mut Vec<Projectile>, enemies: &mut Vec<EnemyResult>) {
-    // Iterate through projectiles
-    for projectile in projectiles.iter() {
-        // Iterate through enemies
-        for enemy in enemies.iter_mut() {
-            if let EnemyResult::BasicEnemy(basic_enemy) = enemy {
-                // Check collision between projectile and basic enemy
-                if is_collision(projectile, basic_enemy) {
-                    // Replace the enemy with a blank enemy
-                    *enemy = EnemyResult::BlankEnemy(BlankEnemy::new(basic_enemy.x, basic_enemy.y));
-                    // Despawn the projectile
-                    // (Implementation depends on how projectiles are managed)
-                    // Example: projectile.despawn();
-                }
-            }
-        }
-    }
-}
-
-fn is_collision(projectile: &Projectile, enemy: &BasicEnemy) -> bool {
-    // Check collision logic here
-    // (e.g., AABB collision detection, circle collision detection, etc.)
-    // Return true if collision occurs, false otherwise
-    return true;
-} */
 
 
 // #[derive(AppState)]
@@ -1109,163 +910,4 @@ fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
         return PlatformResult::Blank(BlankPlatform::new(i, t));
     }   
 }
-
-// struct JumpyBoi {
-//     x: f32,
-//     y: f32,
-// }
-
-// impl JumpyBoi {
-//     fn new(x: f32, y: f32) -> Self {
-//         Self {
-//             x,
-//             y,
-//         }
-//     }
-//     fn position(&self) -> (f32, f32) {
-//         (self.x, self.y)
-//     }
-// }
-
-struct Projectile {
-    x: f32,
-    y: f32,
-    velocity: f32,
-    direction: f32,
-    proj_text: Texture,
-}
-
-
-impl Projectile {
-    fn new(x: f32, y: f32, velocity: f32, direction: f32, proj_text: Texture) -> Self{
-        Self {
-            x,
-            y,
-            velocity,
-            direction,
-            proj_text,
-        }
-    }
-
-
-    fn update(&mut self, dt: f32) {
-        // Update projectile position based on velocity and direction
-        self.x += self.velocity * self.direction.cos() * dt;
-        self.y += self.velocity * self.direction.sin() * dt;
-    }
-}
-
-fn shoot_projectile(state: &mut State) { //need to add delay
-    let time_since_last_shot = Instant::now().duration_since(state.last_shot_time);
-
-    // Check if enough time has passed since the last shot
-    if time_since_last_shot >= state.fire_delay {
-        // If enough time has passed, update the last shot time
-        state.last_shot_time = Instant::now();
-
-    let direction_shift;
-    let x = state.x;
-    let y = state.y;
-    let velocity = -500.0;
-    if state.facing > 0.0 {direction_shift = 0.7}
-    else if state.facing < 0.0 {direction_shift = -0.7}
-    else {direction_shift = 0.0}
-    let direction = 1.57 + direction_shift; // Use player's facing direction (not rn)
-    //only shoots towards left
-
-
-    let projectile = Projectile::new(x, y, velocity, direction, state.proj_text.clone());
-    state.projectiles.push(projectile); 
-    }
-}
-
-fn update_projectiles(state: &mut State, dt: f32) {
-    // Update all projectiles
-    for projectile in &mut state.projectiles {
-        projectile.update(dt);
-    }
-
-
-    // Remove projectiles that are out of bounds
-    state.projectiles.retain(|projectile| {
-        let x = projectile.x;
-        let y = projectile.y;
-        x > 0.0 && x < WINDOW_X as f32 && y > 0.0 && y < WINDOW_Y as f32
-    });
-}
-
-trait Enemy {
-    fn new(x: f32, y: f32) -> Self;
-    fn position(&self) -> (f32, f32);
-}
-
-#[derive(Debug)]
-enum EnemyResult {
-    BasicEnemy(BasicEnemy),
-    BlankEnemy(BlankEnemy),
-}
-
-#[derive(Debug)]
-struct BlankEnemy {
-    x: f32,
-    y: f32,
-}
-
-impl Enemy for BlankEnemy {
-    fn new(x: f32, y: f32) -> Self {
-        Self {
-            x,
-            y,
-        }
-    }
-    fn position(&self) -> (f32, f32) {
-        (self.x, self.y)
-    }
-}
-
-#[derive(Debug)]
-struct BasicEnemy {
-    x: f32,
-    y: f32,
-}
-
-impl Enemy for BasicEnemy {
-    fn new(x: f32, y: f32) -> Self {
-        Self {
-            x,
-            y,
-        }
-    }
-    fn position(&self) -> (f32, f32) {
-        (self.x, self.y)
-    }
-}
-
-
-fn spawn_enemies(enemies: &mut Vec<EnemyResult>) {
-    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    for i in 0..6 {
-        for t in 5..20 {
-            if rng.gen_range(0..=4) == 1 {
-                enemies[(i*20)+t] = EnemyResult::BasicEnemy(BasicEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
-            } else {
-                enemies[(i*20)+t] = EnemyResult::BlankEnemy(BlankEnemy::new(i as f32 * 100.0, t as f32 * 30.0));
-            } 
-        }
-    }
-} 
-
-fn spawn_enemy(i: f32, t: f32, score: i32) -> EnemyResult {
-    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    // very rudimentary formula for when score gets larger to spawn in less platforms 
-    // score is increasing when a platform goes by
-    //let spawn_chance = (score / 50) + 1; // Adjust the divisor for different spawning rates
-    let random = rng.gen_range(1.. (1000 - score));
-    if random == 50 {
-        return EnemyResult::BasicEnemy(BasicEnemy::new(i, t));
-    } else {
-        return EnemyResult::BlankEnemy(BlankEnemy::new(i, t));
-    }   
-}
-
 

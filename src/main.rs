@@ -125,12 +125,14 @@ const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
 const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
-const _WINDOW_Y_FLOAT: f32 = 800.0;
+const WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
 const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
 const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
 const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
+const ENEMY_WIDTH: f32 = 40.0;
+const ENEMY_HEIGHT: f32 = 40.0;
 
 // const PLATFORM_SPEED: f32 = 20.0;
 // const MAX_SPEED: f32 = 350.0; // the max speed the player can go
@@ -430,27 +432,30 @@ fn update(app: &mut App, state: &mut State) {
     for platform in state.platform_list.iter_mut() {
         match platform {
             PlatformResult::BasicPlatform(basic_platform) => {
-                if basic_platform.y > WINDOW_Y as f32 {
+                if basic_platform.y > WINDOW_Y_FLOAT {
                     basic_platform.y = 0.0;
-                    let tmp_platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
-                    *platform = tmp_platform;
+                    *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
                     state.score += 1;
                 }
             }
             PlatformResult::Blank(blank_platform) => {
-                if blank_platform.y > WINDOW_Y as f32 {
+                if blank_platform.y > WINDOW_Y_FLOAT {
                     blank_platform.y = 0.0;
-                    let tmp_platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
-                    *platform = tmp_platform;
+                    *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
                 }
             }
             PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
-                if horizontal_platform.x == 0.0 {
-                    state.platform_direction = true;
-                } else if horizontal_platform.x == WINDOW_X_FLOAT - PLATFORM_WIDTH {
-                    state.platform_direction = false;
+                if horizontal_platform.x <= 0.0 {
+                    horizontal_platform.direction = true;
+                } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                    horizontal_platform.direction = false;
                 }
-                horizontal_platform.shift(state.platform_direction);
+                horizontal_platform.shift(horizontal_platform.direction);
+
+                if horizontal_platform.y > WINDOW_Y_FLOAT {
+                    horizontal_platform.y = 0.0;
+                    *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
+                }
             }
         }
     }
@@ -467,7 +472,15 @@ fn update(app: &mut App, state: &mut State) {
             
         }
     }
-    
+    for enem in state.enemies.iter() {
+        if(default_collision(state.x, state.y, PLATFORM_WIDTH, PLATFORM_HEIGHT, enem.x, enem.y, ENEMY_WIDTH, ENEMY_HEIGHT)){
+            state.score = 0;
+            state.x = 300.0;
+            state.y = 300.0;
+            state.y_vel = 0.0;
+            state.x_vel = 0.0;
+        }
+    }
     //this is the screen wrap code from left to right
     if state.x + (PLAYER_WIDTH / 2.0) < 0.0{
         state.x = (WINDOW_X as f32) + (state.x);
@@ -508,9 +521,15 @@ fn update(app: &mut App, state: &mut State) {
                 PlatformResult::Blank(ref mut platform) => {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
+                PlatformResult::HorizontalMovingPlatform(ref mut platform) => {
+                    platform.y -= state.y_vel * app.timer.delta_f32();
+                }
                 _ => {}
             }
         } 
+        for enem in state.enemies.iter_mut(){
+            enem.y -= state.y_vel * app.timer.delta_f32();
+        }
         state.offset -= state.y_vel * app.timer.delta_f32();
     }
 
@@ -601,7 +620,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
 
     for enemies in &state.enemies {
         draw.image(&enemies.enemy_text)
-            .size(20.0, 20.0)
+            .size(ENEMY_WIDTH, ENEMY_HEIGHT)
             .position(enemies.x, enemies.y);
     }
 
@@ -642,6 +661,9 @@ fn default_collision( x1 :f32, y1 :f32, w1 :f32, h1 :f32, x2 :f32, y2 :f32, w2 :
 fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool{
     match platEnum{
         PlatformResult::BasicPlatform(plat) => {
+            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
+        }
+        PlatformResult::HorizontalMovingPlatform(plat) => {
             return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
         }
         PlatformResult::Blank(play) => {return false;}
@@ -835,31 +857,12 @@ impl Platform for BasicPlatform {
     }
 }
 
-// impl BasicPlatform {
-//     fn get_x(&self) -> f32 {
-//         self.x
-//     }
-//     fn get_y(&self) -> f32 {
-//         self.y
-//     }
-//     fn set_x(&self, x: f32) -> Self {
-//         Self {
-//             x: self.x + x,
-//             y: self.y,
-//         }
-//     }
-//     fn set_y(&mut self, y: f32) -> Self {
-//         Self {
-//             x: self.x,
-//             y: self.y + y,
-//         }
-//     }
-// }
-
 #[derive(Debug)]
 struct HorizontalMovingPlatform {
     x: f32,
     y: f32,
+    direction: bool,
+    delta: f32,
 }
 
 impl Platform for HorizontalMovingPlatform {
@@ -867,6 +870,8 @@ impl Platform for HorizontalMovingPlatform {
         Self {
             x,
             y,
+            direction: true,
+            delta: generate_move_delta(),
         }
     }
     fn position(&self) -> (f32, f32) {
@@ -877,12 +882,16 @@ impl Platform for HorizontalMovingPlatform {
 impl HorizontalMovingPlatform {
     fn shift(&mut self, direction: bool) {
         if direction {
-            self.x += 10.0;
+            self.x += self.delta;
         } else {
-            self.x -= 10.0;
+            self.x -= self.delta;
         }
     }
 }
+
+// struct verticalMovingPlatform {
+
+// }
 
 fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
@@ -901,13 +910,26 @@ fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     // very rudimentary formula for when score gets larger to spawn in less platforms 
     // score is increasing when a platform goes by
-    let random = rng.gen_range(0..=(score));
+    let random: i32 = rng.gen_range(0..=(score));
     if random == 1 || random == 2 {
         return PlatformResult::BasicPlatform(BasicPlatform::new(i, t));
     } else if random == 3 {
-        return PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(i, t));
+        let platform: PlatformResult = PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(i, t)); 
+        return platform;
     } else {
         return PlatformResult::Blank(BlankPlatform::new(i, t));
     }   
 }
 
+fn generate_move_delta() -> f32 {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    let delta: f32 = rng.gen_range(1.0..=7.0);
+    delta
+}
+
+// fn check_proximity(platform_index: i32, platform_list: Vec<PlatformResult>) -> bool {
+
+//     true
+// }
+
+// maybe make everything a 2d array of platform results and grab the first x value to dictate the rest of them

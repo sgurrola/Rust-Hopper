@@ -1,0 +1,140 @@
+[33mcommit 711abe53f37e3c9c8771d1470e6f209c00ea459a[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/projectiles[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Wed Apr 10 19:15:36 2024 -0500
+
+    enemies!
+
+[33mcommit 79ca62f1cbc2457d19b3a55e6f930b282b9852c3[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Sun Mar 31 15:06:42 2024 -0500
+
+    pls
+
+[33mcommit 3266602b693ac9003ae5e27403f43326dc3ad2d6[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Sun Mar 31 15:05:00 2024 -0500
+
+    shooter is fully okay now
+
+[33mcommit 3a5202f5fcb98594ad9a68df01605c52646577d9[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Sun Mar 31 14:25:55 2024 -0500
+
+    happy projectiles
+
+[33mcommit 9a7d658f6bc4424f0375f7a23ad19afae7f7dd5c[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Tue Mar 26 14:58:19 2024 -0500
+
+    enemy index error
+
+[33mcommit fcd7a7e2882d6493bfda1d2417093703e4cc29be[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Thu Mar 21 14:08:53 2024 -0500
+
+    wonky pewpew
+
+[33mcommit b3f338e79e4013e6bfe81f6419127b9d454f6af2[m
+Merge: 0a11391 7fe68f5
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Thu Mar 21 14:06:01 2024 -0500
+
+    Merge branch 'projectiles' of https://github.com/sgurrola/Rust-Hopper into projectiles
+
+[33mcommit 0a11391df429cbff8842a8bd4d123d49eb4f612c[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Thu Mar 21 09:11:06 2024 -0500
+
+    Wonky bullets
+
+[33mcommit 7fe68f592ab6fe28fb2c375350919e24d9589b5d[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Mon Mar 18 22:39:35 2024 -0500
+
+    projectiles but not visual, but pretty sure its working(?)
+
+[33mcommit 49ff66417424c72697ac66b4fb3cda885cf7db1d[m
+Merge: ffd7244 f6835fd
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Mon Mar 18 22:36:25 2024 -0500
+
+    merged most recent platforms and improved colisions
+
+[33mcommit f6835fd6c5ba6b56db415ef4f7545e03f39d40e6[m
+Author: scohen-trinity <scohen@trinity.edu>
+Date:   Mon Mar 18 20:48:31 2024 -0500
+
+    started working with moving platforms, need to fix a bug where the global direction of the platforms
+
+[33mcommit ffd724432f9701d9c5a5fa2bce8b8ef0990ca69e[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Mon Mar 18 16:13:41 2024 -0500
+
+    player now collides and jumps off of platforms, need to fix some visual bugs and things now
+
+[33mcommit 2ec8c73d17da11d54efa91e1e58603e9f3139bfa[m
+Author: scohen-trinity <scohen@trinity.edu>
+Date:   Wed Mar 13 16:29:57 2024 -0500
+
+    made it so that platforms will respawn up at the top of the screen if they go off the screen
+
+[33mcommit cdda5956e9fc8e0474ffed13377c9f7785ebd90a[m
+Author: scohen-trinity <scohen@trinity.edu>
+Date:   Wed Mar 13 12:59:03 2024 -0500
+
+    got it so that platforms respawn at the top when they go past the bottom of the screen, now I need to go about randomizing them upon respawn
+
+[33mcommit 0eea2f61dfc9356f1f302ba696cf43f377923770[m
+Author: scohen-trinity <scohen@trinity.edu>
+Date:   Sun Mar 10 09:05:12 2024 -0500
+
+    added in a horizontally moving platform struct
+
+[33mcommit 0d60707152567769969a9e7b310bc1ab33e6d2b7[m
+Merge: 6845f1d 0fff27c
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Fri Mar 8 16:29:32 2024 -0600
+
+    merged platforms in, also made them up
+
+[33mcommit 6845f1d79ee71adc2f0d5072f52b9763a736787e[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Fri Mar 8 15:53:22 2024 -0600
+
+    player turns with directions
+
+[33mcommit 0fff27c766deaf0698db2f7b3ded7a857f25c96a[m
+Author: scohen-trinity <scohen@trinity.edu>
+Date:   Fri Mar 8 14:39:54 2024 -0600
+
+    platforms first commit
+
+[33mcommit 07b594ca9b073c96968510a5dadd8595eca214b0[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Thu Mar 7 03:11:08 2024 -0600
+
+    working animation system, its kinda gross but oh well
+
+[33mcommit 6a274c040a056c4d54888c06d466275a396e9306[m[33m ([m[1;31morigin/idk[m[33m)[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Thu Feb 29 16:12:17 2024 -0600
+
+    added a test for platform visuals
+
+[33mcommit 3b59f269355f07a2166a66fa83dfbc713cb2a2a6[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Thu Feb 29 12:52:36 2024 -0600
+
+    made the physics feel better
+
+[33mcommit 4fee6215ca929cbab312c4d33fd6d2c5f1e3f313[m
+Author: jfroehli <jfroehli@trinity.edu>
+Date:   Thu Feb 29 00:50:06 2024 -0600
+
+    added physics, acceleration, screen wrapping, and velocity. Also pushing to main because we don't have anything there yet
+
+[33mcommit b9b51362d93c176b16fc6b860cb915eae89fd4ae[m
+Author: sgurrola <124643885+sgurrola@users.noreply.github.com>
+Date:   Thu Feb 22 13:36:57 2024 -0600
+
+    Hi guys!

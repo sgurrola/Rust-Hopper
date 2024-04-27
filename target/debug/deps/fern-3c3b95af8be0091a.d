@@ -1,0 +1,12 @@
+C:\Users\sammy\Downloads\Rust Learning\Rusty-Hopper\Rust-Hopper\target\debug\deps\libfern-3c3b95af8be0091a.rmeta: C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\lib.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\builders.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\errors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\log_impl.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\colors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\meta.rs
+
+C:\Users\sammy\Downloads\Rust Learning\Rusty-Hopper\Rust-Hopper\target\debug\deps\libfern-3c3b95af8be0091a.rlib: C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\lib.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\builders.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\errors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\log_impl.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\colors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\meta.rs
+
+C:\Users\sammy\Downloads\Rust Learning\Rusty-Hopper\Rust-Hopper\target\debug\deps\fern-3c3b95af8be0091a.d: C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\lib.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\builders.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\errors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\log_impl.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\colors.rs C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\meta.rs
+
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\lib.rs:
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\builders.rs:
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\errors.rs:
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\log_impl.rs:
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\colors.rs:
+C:\Users\sammy\.cargo\registry\src\index.crates.io-6f17d22bba15001f\fern-0.6.2\src\meta.rs:

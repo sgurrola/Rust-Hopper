@@ -11,6 +11,9 @@ use enemies::Enemy;
 mod platforms;
 use platforms::*;
 
+mod platform_algos;
+use platform_algos::*;
+
 use crate::enemies::spawn_enemy;
 
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
@@ -34,6 +37,8 @@ struct State {
     last_shot_time: Instant, // Track the time of the last shot
     fire_delay: Duration, // Define the firing delay duration
     enemy_text: Texture,
+    first_section_start: i32,
+    second_section_start: i32,
     enemies: Vec<Enemy>,
 
     
@@ -213,6 +218,7 @@ fn init(gfx: &mut Graphics) -> State {
 
     let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
+    let (first_section_start, second_section_start) = determine_sections();
     State {
         img: texture,
         x: 100.0,
@@ -231,6 +237,8 @@ fn init(gfx: &mut Graphics) -> State {
         fire_delay: Duration::from_millis(100), // Set the firing delay
         enemies: vec![],
         enemy_text,
+        first_section_start: first_section_start,
+        second_section_start: second_section_start,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -459,6 +467,9 @@ fn update(app: &mut App, state: &mut State) {
                     *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
                 }
             }
+            PlatformResult::VerticalMovingPlatform(vertical_platform) => {
+                
+            }
         }
     }
 
@@ -641,6 +652,9 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
                 draw.rect(horizontal_platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
             }
+            PlatformResult::VerticalMovingPlatform(vertical_platform) => {
+                draw.rect(vertical_platform.position(), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+            }
             PlatformResult::Blank(_blank_platform) => {}
         }
     }  
@@ -661,7 +675,7 @@ fn default_collision( x1 :f32, y1 :f32, w1 :f32, h1 :f32, x2 :f32, y2 :f32, w2 :
 }
 
 fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool{
-    match platEnum{
+    match platEnum {
         PlatformResult::BasicPlatform(plat) => {
             return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
         }
@@ -673,140 +687,3 @@ fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool
     }
     
 }
-
-
-// #[derive(AppState)]
-// struct State {
-//     platform_list: Vec<PlatformResult>,
-//     score: i32,
-// }
-
-// impl State {
-//     fn new(_gfx: &mut Graphics) -> Self {
-//         Self {
-//             platform_list: vec![
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//                 PlatformResult::Blank,
-//             ],
-//             score: 0,
-//         }
-//     }
-// }

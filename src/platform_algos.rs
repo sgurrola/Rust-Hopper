@@ -4,15 +4,6 @@ use crate::platforms::*;
 
 use crate::PlatformResult;
 
-pub fn determine_sections() -> (i32, i32) {
-    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-
-    let first_section_start: i32 = rng.gen_range(0..=50);
-    let second_section_start: i32 = rng.gen_range(50..=100);
-
-    (first_section_start, second_section_start)
-}
-
 pub fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     for i in 0..6 {
@@ -30,6 +21,7 @@ pub fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     // very rudimentary formula for when score gets larger to spawn in less platforms 
     // score is increasing when a platform goes by
+
     let random: i32 = rng.gen_range(0..=(score));
     if random == 1 || random == 2 {
         return PlatformResult::BasicPlatform(BasicPlatform::new(i, t));
@@ -42,6 +34,29 @@ pub fn spawn_platform(i: f32, t: f32, score: i32) -> PlatformResult {
     } else {
         return PlatformResult::Blank(BlankPlatform::new(i, t));
     }   
+}
+
+pub fn determine_section() -> i32 {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+
+    let first_section_start: i32 = rng.gen_range(0..=80);
+
+    println!("Special platforms start here {}", &first_section_start);
+
+    first_section_start
+}
+
+pub fn is_in_section(score: i32, section: i32) -> bool {
+    if section < score && score < section + 20 {
+        return true;
+    }
+    false
+}
+
+pub fn generate_special_platform(x: f32, y: f32) -> PlatformResult {
+    // let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+
+    PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(x, y))
 }
 
 // pub fn check_and_regenerate_platforms(platform_list: Vec<PlatformResult>, ) {

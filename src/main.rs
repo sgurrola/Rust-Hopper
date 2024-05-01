@@ -31,14 +31,12 @@ struct State {
     shoot:bool,
     facing:f32,
     platform_list: Vec<PlatformResult>,
-    platform_direction: bool,
     proj_text: Texture,
     projectiles: Vec<Projectile>,
     last_shot_time: Instant, // Track the time of the last shot
     fire_delay: Duration, // Define the firing delay duration
     enemy_text: Texture,
-    first_section_start: i32,
-    second_section_start: i32,
+    section_start: i32,
     enemies: Vec<Enemy>,
 
     
@@ -218,7 +216,7 @@ fn init(gfx: &mut Graphics) -> State {
 
     let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
-    let (first_section_start, second_section_start) = determine_sections();
+    let section_start = determine_section();
     State {
         img: texture,
         x: 100.0,
@@ -237,8 +235,7 @@ fn init(gfx: &mut Graphics) -> State {
         fire_delay: Duration::from_millis(100), // Set the firing delay
         enemies: vec![],
         enemy_text,
-        first_section_start: first_section_start,
-        second_section_start: second_section_start,
+        section_start,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -361,7 +358,6 @@ fn init(gfx: &mut Graphics) -> State {
                 PlatformResult::Blank(BlankPlatform::new(400.0, 570.0)),
                 PlatformResult::Blank(BlankPlatform::new(500.0, 570.0)),
             ],
-        platform_direction: true,
 } 
 }
 
@@ -440,36 +436,69 @@ fn update(app: &mut App, state: &mut State) {
         println!("bounce here {}", state.y_vel);
     }*/
     for platform in state.platform_list.iter_mut() {
-        match platform {
-            PlatformResult::BasicPlatform(basic_platform) => {
-                if basic_platform.y > WINDOW_Y_FLOAT {
-                    basic_platform.y = 0.0;
-                    *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
-                    state.score += 1;
+        if is_in_section(state.score, state.section_start) {
+            match platform {
+                PlatformResult::BasicPlatform(basic_platform) => {
+                    if basic_platform.y > WINDOW_Y_FLOAT {
+                        basic_platform.y = 0.0;
+                        *platform = generate_special_platform(basic_platform.x, basic_platform.y);
+                        state.score += 1;
+                    }
                 }
-            }
-            PlatformResult::Blank(blank_platform) => {
-                if blank_platform.y > WINDOW_Y_FLOAT {
-                    blank_platform.y = 0.0;
-                    *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
+                PlatformResult::Blank(blank_platform) => {
+                    if blank_platform.y > WINDOW_Y_FLOAT {
+                        blank_platform.y = 0.0;
+                        *platform = generate_special_platform(blank_platform.x, blank_platform.y);
+                    }
                 }
-            }
-            PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
-                if horizontal_platform.x <= 0.0 {
-                    horizontal_platform.direction = true;
-                } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
-                    horizontal_platform.direction = false;
+                PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
+                    if horizontal_platform.x <= 0.0 {
+                        horizontal_platform.direction = true;
+                    } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                        horizontal_platform.direction = false;
+                    }
+                    horizontal_platform.shift(horizontal_platform.direction);
+    
+                    if horizontal_platform.y > WINDOW_Y_FLOAT {
+                        horizontal_platform.y = 0.0;
+                    }
                 }
-                horizontal_platform.shift(horizontal_platform.direction);
-
-                if horizontal_platform.y > WINDOW_Y_FLOAT {
-                    horizontal_platform.y = 0.0;
-                    *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
+                PlatformResult::VerticalMovingPlatform(vertical_platform) => {
+                    
                 }
-            }
-            PlatformResult::VerticalMovingPlatform(vertical_platform) => {
-                
-            }
+            }   
+        } else {
+            match platform {
+                PlatformResult::BasicPlatform(basic_platform) => {
+                    if basic_platform.y > WINDOW_Y_FLOAT {
+                        basic_platform.y = 0.0;
+                        *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
+                        state.score += 1;
+                    }
+                }
+                PlatformResult::Blank(blank_platform) => {
+                    if blank_platform.y > WINDOW_Y_FLOAT {
+                        blank_platform.y = 0.0;
+                        *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
+                    }
+                }
+                PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
+                    if horizontal_platform.x <= 0.0 {
+                        horizontal_platform.direction = true;
+                    } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                        horizontal_platform.direction = false;
+                    }
+                    horizontal_platform.shift(horizontal_platform.direction);
+    
+                    if horizontal_platform.y > WINDOW_Y_FLOAT {
+                        horizontal_platform.y = 0.0;
+                        *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
+                    }
+                }
+                PlatformResult::VerticalMovingPlatform(vertical_platform) => {
+                    
+                }
+            }   
         }
     }
 

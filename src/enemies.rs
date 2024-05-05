@@ -3,19 +3,19 @@ use rand::Rng;
 
 #[derive(Debug)]
 pub enum Enemies {
-    PythonEnemy(PythonEnemy),
+    StaticEnemy(StaticEnemy),
     MovingEnemy(MovingEnemy),
     PoopyEnemy(PoopyEnemy),
 }
 
 #[derive(Debug)]
-pub struct PythonEnemy {
+pub struct StaticEnemy {
     pub x: f32,
     pub y: f32,
     pub enemy_text: Texture,
 }
 
-impl PythonEnemy {
+impl StaticEnemy {
     fn new(x: f32, y: f32, enemy_text: Texture) -> Self{
         Self {
             x,
@@ -78,17 +78,17 @@ pub fn spawn_enemy(state: &mut crate::State){
     let thing = enemy_type;
     let x: f32 = random;
     let y: f32 = state.y - 300.0;
-    let mut enemies: Enemies = Enemies::PythonEnemy(PythonEnemy::new(x, y, state.enemy_text.clone()));
-    println!("{}", thing);
+    let mut enemies: Enemies = Enemies::StaticEnemy(StaticEnemy::new(x, y, state.haskell_text.clone()));
+    //println!("{}", thing);
     if thing == 2 || (state.score > 70 && (thing == 2 || thing == 3)){
-        enemies = Enemies::MovingEnemy(MovingEnemy::new(x, y, state.enemy_text.clone()));
-        println!("moving enemy spawned");
-    } else if thing == 4 && state.score > 100{
-        enemies = Enemies::PoopyEnemy(PoopyEnemy::new(x, y, state.enemy_text.clone()));
-        println!("poopy enemy spawned");
+        enemies = Enemies::MovingEnemy(MovingEnemy::new(x, y, state.python_text.clone()));
+        //println!("moving enemy spawned");
+    } else if thing == 4 && state.score > 40{
+        enemies = Enemies::PoopyEnemy(PoopyEnemy::new(x, y, state.java_text.clone()));
+        //println!("poopy enemy spawned");
     }
     state.enemies.push(enemies);
-    println!("enemy spawned");
+    //println!("enemy spawned");
 }
 
 pub fn generate_move_delta() -> f32 {
@@ -98,7 +98,7 @@ pub fn generate_move_delta() -> f32 {
 }
 //for enemy in state.enemies.iter_mut(){
 //    match enemy {
-//        Enemies::PythonEnemy(_pe) => {
+//        Enemies::StaticEnemy(_pe) => {
 //        }
 
 //fn update_enemies(state: &mut State, dt: f32) {}

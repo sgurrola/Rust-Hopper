@@ -5,7 +5,7 @@ pub trait Platform {
     fn position(&self) -> (f32, f32);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum PlatformResult {
     BasicPlatform(BasicPlatform),
     HorizontalMovingPlatform(HorizontalMovingPlatform),
@@ -13,7 +13,7 @@ pub enum PlatformResult {
     Blank(BlankPlatform),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct BlankPlatform {
     pub x: f32,
     pub y: f32,
@@ -31,7 +31,7 @@ impl Platform for BlankPlatform {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct BasicPlatform {
     pub x: f32,
     pub y: f32,
@@ -49,7 +49,7 @@ impl Platform for BasicPlatform {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HorizontalMovingPlatform {
     pub x: f32,
     pub y: f32,
@@ -81,7 +81,7 @@ impl HorizontalMovingPlatform {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct VerticalMovingPlatform {
     pub x: f32,
     pub y: f32,

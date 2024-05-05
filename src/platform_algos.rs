@@ -55,42 +55,11 @@ pub fn is_in_section(score: i32, section: i32) -> bool {
 
 pub fn generate_special_platform(x: f32, y: f32) -> PlatformResult {
     // let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-
+    // println!("triggered");
     PlatformResult::HorizontalMovingPlatform(HorizontalMovingPlatform::new(x, y))
 }
 
-// pub fn check_and_regenerate_platforms(platform_list: Vec<PlatformResult>, ) {
-//     for platform in state.platform_list.iter_mut() {
-//         match platform {
-//             PlatformResult::BasicPlatform(basic_platform) => {
-//                 if basic_platform.y > WINDOW_Y_FLOAT {
-//                     basic_platform.y = 0.0;
-//                     *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
-//                     state.score += 1;
-//                 }
-//             }
-//             PlatformResult::Blank(blank_platform) => {
-//                 if blank_platform.y > WINDOW_Y_FLOAT {
-//                     blank_platform.y = 0.0;
-//                     *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
-//                 }
-//             }
-//             PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
-//                 if horizontal_platform.x <= 0.0 {
-//                     horizontal_platform.direction = true;
-//                 } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
-//                     horizontal_platform.direction = false;
-//                 }
-//                 horizontal_platform.shift(horizontal_platform.direction);
-
-//                 if horizontal_platform.y > WINDOW_Y_FLOAT {
-//                     horizontal_platform.y = 0.0;
-//                     *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
-//                 }
-//             }
-//             PlatformResult::VerticalMovingPlatform(vertical_platform) => {
-                
-//             }
-//         }
-//     }
-// }
+pub fn check_proximity(index: &i32, platforms: &Vec<PlatformResult>) -> i32 {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+    rng.gen_range(0..=5)
+}

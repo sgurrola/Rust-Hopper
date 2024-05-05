@@ -435,23 +435,25 @@ fn update(app: &mut App, state: &mut State) {
         state.y_vel = BOUNCE_HEIGHT;
         println!("bounce here {}", state.y_vel);
     }*/
-    for platform in state.platform_list.iter_mut() {
-        if is_in_section(state.score, state.section_start) {
+    for index in 0..120 {
+        let platform: PlatformResult = state.platform_list[index as usize];
+        if is_in_section(state.score, state.section_start) && check_proximity(&index, &state.platform_list) < 3 {
             match platform {
-                PlatformResult::BasicPlatform(basic_platform) => {
+                PlatformResult::BasicPlatform(mut basic_platform) => {
                     if basic_platform.y > WINDOW_Y_FLOAT {
                         basic_platform.y = 0.0;
-                        *platform = generate_special_platform(basic_platform.x, basic_platform.y);
+                        state.platform_list[index as usize] = generate_special_platform(basic_platform.x, basic_platform.y);
+                        println!("{:?}", &state.platform_list[index as usize]);
                         state.score += 1;
                     }
                 }
-                PlatformResult::Blank(blank_platform) => {
+                PlatformResult::Blank(mut blank_platform) => {
                     if blank_platform.y > WINDOW_Y_FLOAT {
                         blank_platform.y = 0.0;
-                        *platform = generate_special_platform(blank_platform.x, blank_platform.y);
+                        state.platform_list[index as usize] = generate_special_platform(blank_platform.x, blank_platform.y);
                     }
                 }
-                PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
+                PlatformResult::HorizontalMovingPlatform(mut horizontal_platform) => {
                     if horizontal_platform.x <= 0.0 {
                         horizontal_platform.direction = true;
                     } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
@@ -468,18 +470,18 @@ fn update(app: &mut App, state: &mut State) {
                 }
             }   
         } else {
-            match platform {
+            match &mut state.platform_list[index as usize] {
                 PlatformResult::BasicPlatform(basic_platform) => {
                     if basic_platform.y > WINDOW_Y_FLOAT {
                         basic_platform.y = 0.0;
-                        *platform = spawn_platform(basic_platform.x, basic_platform.y, state.score);
+                        state.platform_list[index as usize] = spawn_platform(basic_platform.x, basic_platform.y, state.score);
                         state.score += 1;
                     }
                 }
                 PlatformResult::Blank(blank_platform) => {
                     if blank_platform.y > WINDOW_Y_FLOAT {
                         blank_platform.y = 0.0;
-                        *platform = spawn_platform(blank_platform.x, blank_platform.y, state.score);
+                        state.platform_list[index as usize] = spawn_platform(blank_platform.x, blank_platform.y, state.score);
                     }
                 }
                 PlatformResult::HorizontalMovingPlatform(horizontal_platform) => {
@@ -488,11 +490,12 @@ fn update(app: &mut App, state: &mut State) {
                     } else if horizontal_platform.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
                         horizontal_platform.direction = false;
                     }
+                
                     horizontal_platform.shift(horizontal_platform.direction);
     
                     if horizontal_platform.y > WINDOW_Y_FLOAT {
                         horizontal_platform.y = 0.0;
-                        *platform = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
+                        state.platform_list[index as usize] = spawn_platform(horizontal_platform.x, horizontal_platform.y, state.score);
                     }
                 }
                 PlatformResult::VerticalMovingPlatform(vertical_platform) => {

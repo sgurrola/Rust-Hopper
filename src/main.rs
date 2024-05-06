@@ -142,7 +142,7 @@ const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
 const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
-const _WINDOW_Y_FLOAT: f32 = 800.0;
+const WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
 const PLAYER_WIDTH: f32 = 70.0; // width of player sprite
@@ -609,7 +609,7 @@ fn update(app: &mut App, state: &mut State) {
         }
     } */
 
-    if state.y_vel >0.0 {
+    if state.y_vel >=0.0 {
         let mut thing: f32 = 0.0;
         //if(state.facing > 0.0){
             //thing = PLAYER_WIDTH * -1.0;
@@ -679,6 +679,9 @@ fn update(app: &mut App, state: &mut State) {
                 PlatformResult::Blank(ref mut platform) => {
                     platform.y += dist;
                 }
+                PlatformResult::HorizontalMovingPlatform(ref mut platform) => {
+                    platform.y += dist;
+                }
                 _ => {}
             }
         } 
@@ -692,6 +695,9 @@ fn update(app: &mut App, state: &mut State) {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
                 PlatformResult::Blank(ref mut platform) => {
+                    platform.y -= state.y_vel * app.timer.delta_f32();
+                }
+                PlatformResult::HorizontalMovingPlatform(ref mut platform) => {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
                 _ => {}
@@ -818,7 +824,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         Anims::Idle(anime, _) | Anims::Falling(anime, _) | Anims::Shooting(anime, _) => thing = &anime.anims[anime.frame as usize],
         _ => thing = &state.img,
     }
-    draw.rect((state.x, state.y), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+    //draw.rect((state.x, state.y), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
     draw.image(thing).size(/*state.facing * */PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);

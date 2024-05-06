@@ -4,6 +4,8 @@ use crate::platforms::*;
 
 use crate::PlatformResult;
 
+use crate::collisions::*;
+
 pub fn spawn_platforms(platforms: &mut Vec<PlatformResult>) {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
     for i in 0..6 {
@@ -60,6 +62,56 @@ pub fn generate_special_platform(x: f32, y: f32) -> PlatformResult {
 }
 
 pub fn check_proximity(index: &i32, platforms: &Vec<PlatformResult>) -> i32 {
-    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-    rng.gen_range(0..=5)
+    let mut check = 0;
+    let mut px = 0.0;
+    let mut py = 0.0;
+    let w = crate::PLATFORM_WIDTH;
+    let h = crate::PLATFORM_HEIGHT;
+    match platforms[*index as usize] {
+        PlatformResult::BasicPlatform(ref platform) => {
+            px = platform.x;
+            py = platform.y;
+        }
+        PlatformResult::Blank(ref platform) => {
+            px = platform.x;
+            py = platform.y;
+        }
+        PlatformResult::HorizontalMovingPlatform(ref platform) => {
+            px = platform.x;
+            py = platform.y;
+        }
+        PlatformResult::VerticalMovingPlatform(ref platform) => {
+            px = platform.x;
+            py = platform.y;
+        }
+
+    }
+    for platform in platforms.iter() {
+        match platform {
+            PlatformResult::BasicPlatform(ref platform) => {
+                if default_collision(px - w, py - h, w * 3.0, h * 3.0, platform.x, platform.y, w, h){
+                    check = 3;
+                }
+            }
+            PlatformResult::Blank(ref platform) => {
+                
+            }
+            PlatformResult::HorizontalMovingPlatform(ref platform) => {
+                if default_collision(px - w, py - h, w * 3.0, h * 3.0, platform.x, platform.y, w, h){
+                    check = 3;
+                }
+            }
+            PlatformResult::VerticalMovingPlatform(ref platform) => {
+                if default_collision(px - w, py - h, w * 3.0, h * 3.0, platform.x, platform.y, w, h){
+                    check = 3;
+                }
+            }
+            _ => {}
+    }
+    
+    
+}
+let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+//return (rng.gen_range(0..=5) + check);
+return check;
 }

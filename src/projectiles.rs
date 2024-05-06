@@ -37,6 +37,7 @@ pub fn shoot_projectile(state: &mut crate::State) { //need to add delay
         // If enough time has passed, update the last shot time
         state.last_shot_time = Instant::now();
 
+        state.shoot = true;
     let direction_shift;
     let x = state.x;
     let y = state.y;

@@ -14,6 +14,9 @@ use platforms::*;
 mod platform_algos;
 use platform_algos::*;
 
+mod collisions;
+use collisions::*;
+
 use crate::enemies::spawn_enemy;
 
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
@@ -133,8 +136,8 @@ const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
 const WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
-const PLAYER_WIDTH: f32 = 80.0; // width of player sprite
-const PLAYER_HEIGHT: f32 = 80.0; //height of player sprite
+const PLAYER_WIDTH: f32 = 70.0; // width of player sprite
+const PLAYER_HEIGHT: f32 = 120.0; //height of player sprite
 const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
 const ENEMY_WIDTH: f32 = 40.0;
 const ENEMY_HEIGHT: f32 = 40.0;
@@ -168,37 +171,67 @@ fn init(gfx: &mut Graphics) -> State {
 
     let idle1 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_idle1.png"))
+    .from_image(include_bytes!("assets/spin1.PNG"))
     .build()
     .unwrap();
 
     let idle2 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_idle2.png"))
+    .from_image(include_bytes!("assets/spin2.PNG"))
     .build()
     .unwrap();
 
     let idle3 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_idle3.png"))
+    .from_image(include_bytes!("assets/spin3.PNG"))
+    .build()
+    .unwrap();
+
+    let idle4 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/spin4.PNG"))
     .build()
     .unwrap();
 
     let fall4 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_falling1.png"))
+    .from_image(include_bytes!("assets/groove1.PNG"))
     .build()
     .unwrap();
 
     let fall5 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_falling2.png"))
+    .from_image(include_bytes!("assets/groove2.PNG"))
     .build()
     .unwrap();
 
     let fall6 = gfx
     .create_texture()
-    .from_image(include_bytes!("assets/guy_falling3.png"))
+    .from_image(include_bytes!("assets/groove3.PNG"))
+    .build()
+    .unwrap();
+
+    let shoot1 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/juggle1.PNG"))
+    .build()
+    .unwrap();
+
+    let shoot2 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/juggle2.PNG"))
+    .build()
+    .unwrap();
+
+    let shoot3 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/juggle3.PNG"))
+    .build()
+    .unwrap();
+
+    let shoot4 = gfx
+    .create_texture()
+    .from_image(include_bytes!("assets/juggle4.PNG"))
     .build()
     .unwrap();
 
@@ -214,8 +247,9 @@ fn init(gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
-    let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3], timing:0.0,frame:0, speed:0.12},0);
+    let temp = Anims::Idle(Animation{anims:vec![idle1, idle2, idle3,idle4], timing:0.0,frame:0, speed:0.12},0);
     let temp1 = Anims::Falling(Animation{anims:vec![fall4, fall5, fall6], timing:0.0, frame:0, speed:0.12}, 1);
+    let temp2 = Anims::Shooting(Animation{anims:vec![shoot1, shoot2, shoot3, shoot4], timing:0.0, frame:0, speed:0.12}, 2);
     let section_start = determine_section();
     State {
         img: texture,
@@ -226,7 +260,7 @@ fn init(gfx: &mut Graphics) -> State {
         offset:0.0,
         score:0,
         anim:0,
-        anims: vec![temp, temp1],
+        anims: vec![temp, temp1, temp2],
         shoot: false,
         facing: 1.0,
         projectiles: vec![],
@@ -366,9 +400,9 @@ fn update(app: &mut App, state: &mut State) {
 
     //for moving left
     if app.keyboard.is_down(KeyCode::A) {
-        if state.facing > 0.0 {
-            state.x += PLAYER_WIDTH;
-        }
+        //if state.facing > 0.0 {
+            //state.x += PLAYER_WIDTH;
+        //}
         state.facing = -1.0;
         //checks if player is moving with or against key, and adds to the velocity acordingly
         if state.x_vel < 1.0 {
@@ -382,10 +416,10 @@ fn update(app: &mut App, state: &mut State) {
     }
     //for moving right
     if app.keyboard.is_down(KeyCode::D) {
-        if state.facing < 0.0 {
-            state.x -= PLAYER_WIDTH;
+        //if state.facing < 0.0 {
+            //state.x -= PLAYER_WIDTH;
             
-        }
+        //}
         state.facing = 1.0;
         //checks if player is moving with or against key, and adds to the velocity acordingly
         if state.x_vel > 1.0 {
@@ -507,9 +541,9 @@ fn update(app: &mut App, state: &mut State) {
 
     if state.y_vel >0.0 {
         let mut thing: f32 = 0.0;
-        if(state.facing > 0.0){
-            thing = PLAYER_WIDTH * -1.0;
-        }
+        //if(state.facing > 0.0){
+            //thing = PLAYER_WIDTH * -1.0;
+        //}
         for platform in state.platform_list.iter() {
             if player_plat_collision(state.x + thing, state.y, platform){
                 state.y_vel = BOUNCE_HEIGHT;
@@ -623,6 +657,7 @@ fn update(app: &mut App, state: &mut State) {
                 anime.timing = 0.0;
             }
             if anime.frame >= anime.anims.len() as i32{
+                state.shoot = false;
                 state.anim = 0;
                 anime.frame = 0;
                 anime.timing = 0.0;
@@ -631,6 +666,7 @@ fn update(app: &mut App, state: &mut State) {
      }
 
      if app.keyboard.is_down(KeyCode::Space) {
+        
         projectiles::shoot_projectile(state);
     }
 
@@ -653,7 +689,8 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         Anims::Idle(anime, _) | Anims::Falling(anime, _) | Anims::Shooting(anime, _) => thing = &anime.anims[anime.frame as usize],
         _ => thing = &state.img,
     }
-    draw.image(thing).size(state.facing * PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
+    draw.rect((state.x, state.y), (PLATFORM_WIDTH, PLATFORM_HEIGHT));
+    draw.image(thing).size(/*state.facing * */PLAYER_WIDTH,PLAYER_HEIGHT).position(state.x, state.y);
     draw.image(&state.img).size(40.0,120.0).position(400.0, 200.0 + state.offset);
     draw.image(&state.img).size(40.0,120.0).position(300.0, 100.0 + state.offset);
 
@@ -696,26 +733,26 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     
 }
 
-fn default_collision( x1 :f32, y1 :f32, w1 :f32, h1 :f32, x2 :f32, y2 :f32, w2 :f32,  h2 :f32) -> bool {
-    if ((x1 + w1) > x2 && x1 < x2) || ((x2 + w2) > x1 && x2 < x1)
-    {
-        if ((y1 + h1) > y2 && y1 < y2) || ((y2 + h2) > y1 && y2 < y1){
-            return true;
-        }
-    }
-    return false;
-}
+// fn default_collision( x1 :f32, y1 :f32, w1 :f32, h1 :f32, x2 :f32, y2 :f32, w2 :f32,  h2 :f32) -> bool {
+//     if ((x1 + w1) > x2 && x1 < x2) || ((x2 + w2) > x1 && x2 < x1)
+//     {
+//         if ((y1 + h1) > y2 && y1 < y2) || ((y2 + h2) > y1 && y2 < y1){
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
-fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool{
-    match platEnum {
-        PlatformResult::BasicPlatform(plat) => {
-            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
-        }
-        PlatformResult::HorizontalMovingPlatform(plat) => {
-            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
-        }
-        PlatformResult::Blank(play) => {return false;}
-        _ => {return false;}
-    }
+// fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> bool{
+//     match platEnum {
+//         PlatformResult::BasicPlatform(plat) => {
+//             return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
+//         }
+//         PlatformResult::HorizontalMovingPlatform(plat) => {
+//             return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, plat.x, plat.y, PLATFORM_WIDTH, PLATFORM_HEIGHT);
+//         }
+//         PlatformResult::Blank(play) => {return false;}
+//         _ => {return false;}
+//     }
     
-}
+// }

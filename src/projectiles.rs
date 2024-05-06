@@ -41,13 +41,11 @@ pub fn shoot_projectile(state: &mut crate::State) { //need to add delay
     let direction_shift;
     let x = state.x;
     let y = state.y;
-    let velocity = -500.0;
+    let velocity = -300.0;
     if state.facing > 0.0 {direction_shift = 0.7}
     else if state.facing < 0.0 {direction_shift = -0.7}
     else {direction_shift = 0.0}
     let direction = 1.57 + direction_shift; // Use player's facing direction (not rn)
-    //only shoots towards left
-
 
     let projectile = Projectile::new(x, y, velocity, direction, state.proj_text.clone());
     state.projectiles.push(projectile); 
@@ -58,6 +56,7 @@ pub fn update_projectiles(state: &mut crate::State, dt: f32) {
     // Update all projectiles
     for projectile in &mut state.projectiles {
         projectile.update(dt);
+        //println!("{}", dt);
     }
 
 

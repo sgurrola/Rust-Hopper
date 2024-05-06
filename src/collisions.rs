@@ -23,3 +23,37 @@ pub fn player_plat_collision( px :f32, py :f32,  platEnum : &PlatformResult) -> 
     }
     
 }
+
+fn player_enemy_collision( px :f32, py :f32,  enemy : &Enemies) -> bool{
+    match enemy{
+        Enemies::StaticEnemy(pe) => {
+            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, pe.x, pe.y, 20.0, 20.0);
+        }
+        Enemies::MovingEnemy(me) => {
+            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, me.x, me.y, 30.0, 30.0);
+        }
+        Enemies::PoopyEnemy(po) => {
+            return default_collision(px,py, PLAYER_WIDTH, PLAYER_HEIGHT, po.x, po.y, 60.0, 60.0);
+        }
+    }
+}
+
+ //currently does nothing
+fn projectile_enemy_collision( px :f32, py :f32,  enemy : &Enemies) -> bool{
+    match enemy{ 
+        Enemies::StaticEnemy(pe) => {
+           return default_collision(px,py, 20.0, 20.0, pe.x, pe.y, 20.0, 20.0);
+        }
+        Enemies::MovingEnemy(me) => {
+            return default_collision(px,py, 20.0, 20.0, me.x, me.y, 30.0, 30.0);
+        }
+        Enemies::PoopyEnemy(po) => {
+            return default_collision(px,py, 20.0, 20.0, po.x, po.y, 60.0, 60.0);
+        }
+    }
+}
+
+fn player_poop_collision( px :f32, py :f32, poop: Poop) -> bool{
+    //return default_collision(px,py, 20.0, 20.0, po.x, po.y, 60.0, 60.0);
+    return false;
+}

@@ -1,12 +1,14 @@
 use notan::prelude::*;
 use notan::draw::*;
+use rand::Rng;
+use std::iter::Scan;
 use std::time::{Duration, Instant};
 
 mod projectiles;
-use projectiles::Projectile;
+use projectiles::*;
 
 mod enemies;
-use enemies::Enemy;
+use enemies::*;
 
 mod platforms;
 use platforms::*;
@@ -18,6 +20,8 @@ mod collisions;
 use collisions::*;
 
 use crate::enemies::spawn_enemy;
+mod poop;
+use poop::*;
 
 //the state holds all our game data / stats / anything we need, passed to both the render and gameplay logic function
 #[derive(AppState)]
@@ -38,9 +42,14 @@ struct State {
     projectiles: Vec<Projectile>,
     last_shot_time: Instant, // Track the time of the last shot
     fire_delay: Duration, // Define the firing delay duration
-    enemy_text: Texture,
+    python_text: Texture,
+    haskell_text: Texture,
     section_start: i32,
-    enemies: Vec<Enemy>,
+    java_text: Texture,
+    enemies: Vec<Enemies>,
+    poop: Vec<Poop>,
+    poop_text: Texture,
+
 
     
     //anim: Option<Box<dyn AnimState>>
@@ -133,14 +142,12 @@ const STOP_ACCEL: f32 = 3.0; // acceleration boost for coming to a stop
 const WINDOW_X: u32 = 600; //sets the width of the game window
 const WINDOW_Y: u32 = 800; //sets the height of the game window
 const WINDOW_X_FLOAT: f32 = 600.0; //sets the width of the game window
-const WINDOW_Y_FLOAT: f32 = 800.0;
+const _WINDOW_Y_FLOAT: f32 = 800.0;
 const PLATFORM_WIDTH: f32 = 100.0;
 const PLATFORM_HEIGHT: f32 = 30.0;
 const PLAYER_WIDTH: f32 = 70.0; // width of player sprite
 const PLAYER_HEIGHT: f32 = 120.0; //height of player sprite
 const BOUNCE_HEIGHT: f32 = -600.0; //player jump height, its negative because y zero is at top of screen
-const ENEMY_WIDTH: f32 = 40.0;
-const ENEMY_HEIGHT: f32 = 40.0;
 
 // const PLATFORM_SPEED: f32 = 20.0;
 // const MAX_SPEED: f32 = 350.0; // the max speed the player can go
@@ -237,13 +244,29 @@ fn init(gfx: &mut Graphics) -> State {
 
     let proj_text = gfx
         .create_texture()
-        .from_image(include_bytes!("assets/cat-basket.png"))
+        .from_image(include_bytes!("assets/scala_icon.png"))
         .build()
         .unwrap();
 
-    let enemy_text = gfx
+    let python_text = gfx
         .create_texture()
         .from_image(include_bytes!("assets/python_icon.png"))
+        .build()
+        .unwrap();
+    let haskell_text = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/haskell_icon.png"))
+        .build()
+        .unwrap();
+
+    let java_text = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/java_icon.png"))
+        .build()
+        .unwrap();
+    let poop_text = gfx
+        .create_texture()
+        .from_image(include_bytes!("assets/null_icon.png"))
         .build()
         .unwrap();
 
@@ -266,10 +289,14 @@ fn init(gfx: &mut Graphics) -> State {
         projectiles: vec![],
         proj_text,
         last_shot_time: Instant::now(), // Initialize last shot time to the current time
-        fire_delay: Duration::from_millis(100), // Set the firing delay
+        fire_delay: Duration::from_millis(200), // Set the firing delay
         enemies: vec![],
-        enemy_text,
+        python_text,
+        haskell_text,
+        java_text,
+        poop: vec![],
         section_start,
+        poop_text,
         platform_list: vec![
                 PlatformResult::Blank(BlankPlatform::new(0.0, 0.0)),
                 PlatformResult::Blank(BlankPlatform::new(100.0, 0.0)),
@@ -397,7 +424,6 @@ fn init(gfx: &mut Graphics) -> State {
 
 //this is the logic that runs each frame
 fn update(app: &mut App, state: &mut State) {
-
     //for moving left
     if app.keyboard.is_down(KeyCode::A) {
         //if state.facing > 0.0 {
@@ -539,6 +565,50 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
+    let mut poops: Vec<(f32,f32)> = Vec::new();
+    for enemy in state.enemies.iter_mut(){
+        match enemy {
+            Enemies::StaticEnemy(_pe) => {
+            }
+            Enemies::MovingEnemy(me) => {
+                if me.x <= 0.0 {
+                    me.direction = true;
+                } else if me.x >= WINDOW_X_FLOAT - PLATFORM_WIDTH {
+                    me.direction = false;
+                }
+                me.shift(me.direction);
+            }
+            Enemies::PoopyEnemy(po) => {
+                //println!("poopy");
+                poops.push((po.x,po.y));
+            }
+        }
+    }
+
+    //poop::shoot_poopies(state, 500.0, 500.0);
+    for (x,y) in poops{
+        //println!("poop loop");
+        poop::shoot_poopies(state, x, y);
+    }
+    //my issue is tying this specifically to Poopy Enemy, otherwise I think it is fine
+
+    poop::update_poopies(state, app.timer.delta_f32());
+
+    if app.keyboard.is_down(KeyCode::Space) {
+        projectiles::shoot_projectile(state);
+    }
+
+    projectiles::update_projectiles(state, app.timer.delta_f32());
+    //shoot enemies pls currently does nothing 
+    /*
+    for enemy in state.enemies.iter_mut(){
+        for projectile in state.projectiles.iter() {
+            if projectile_enemy_collision(projectile.x, projectile.y, &enemy) {
+
+            }
+        }
+    } */
+
     if state.y_vel >0.0 {
         let mut thing: f32 = 0.0;
         //if(state.facing > 0.0){
@@ -550,16 +620,40 @@ fn update(app: &mut App, state: &mut State) {
             }
             
         }
-    }
-    for enem in state.enemies.iter() {
-        if(default_collision(state.x, state.y, PLATFORM_WIDTH, PLATFORM_HEIGHT, enem.x, enem.y, ENEMY_WIDTH, ENEMY_HEIGHT)){
-            state.score = 0;
-            state.x = 300.0;
-            state.y = 300.0;
-            state.y_vel = 0.0;
-            state.x_vel = 0.0;
+
+        let mut reset_check = false;
+        for projectile in state.projectiles.iter_mut() {
+            for enemy in state.enemies.iter_mut() {
+                if player_enemy_collision(state.x + thing, state.y, enemy){
+                    state.score = 0;
+                    state.x = 300.0;
+                    state.y = 300.0;
+                    state.y_vel = 0.0;
+                    state.x_vel = 0.0;
+                    reset_check = true;
+                    state.poop = vec![];
+                } else if projectile_enemy_collision(projectile.x, projectile.y, enemy){
+                        match enemy {
+                            Enemies::StaticEnemy(ref mut pe) => {
+                                pe.y = 4000.0;
+                            }
+                            Enemies::MovingEnemy(ref mut me) => {
+                                me.y = 4000.0;
+                            }
+                            Enemies::PoopyEnemy(ref mut po) => {
+                                po.y = 4000.0;
+                            }
+                        }
+                }
+            }
         }
+        if reset_check == true{
+            state.enemies = vec![];
+        }
+        
+
     }
+    
     //this is the screen wrap code from left to right
     if state.x + (PLAYER_WIDTH / 2.0) < 0.0{
         state.x = (WINDOW_X as f32) + (state.x);
@@ -600,16 +694,28 @@ fn update(app: &mut App, state: &mut State) {
                 PlatformResult::Blank(ref mut platform) => {
                     platform.y -= state.y_vel * app.timer.delta_f32();
                 }
-                PlatformResult::HorizontalMovingPlatform(ref mut platform) => {
-                    platform.y -= state.y_vel * app.timer.delta_f32();
-                }
                 _ => {}
             }
         } 
-        for enem in state.enemies.iter_mut(){
-            enem.y -= state.y_vel * app.timer.delta_f32();
+        for enemy in state.enemies.iter_mut(){
+            match enemy {
+                Enemies::StaticEnemy(ref mut pe) => {
+                    pe.y -= state.y_vel * app.timer.delta_f32();
+                }
+                Enemies::MovingEnemy(ref mut me) => {
+                    me.y -= state.y_vel * app.timer.delta_f32();
+                }
+                Enemies::PoopyEnemy(ref mut po) => {
+                    po.y -= state.y_vel * app.timer.delta_f32();
+                }
+            }
+        }
+
+        for poopy in state.poop.iter_mut() {
+            poopy.y -= state.y_vel * app.timer.delta_f32();
         }
         state.offset -= state.y_vel * app.timer.delta_f32();
+
     }
 
     if state.y > WINDOW_Y as f32 + 20.0{
@@ -618,6 +724,8 @@ fn update(app: &mut App, state: &mut State) {
         state.y = 300.0;
         state.y_vel = 0.0;
         state.x_vel = 0.0;
+        state.enemies = vec![];
+        state.poop = vec![];
     }
     
 
@@ -653,7 +761,7 @@ fn update(app: &mut App, state: &mut State) {
         Anims::Shooting(ref mut anime, i) => {
             anime.timing += app.timer.delta_f32();
             if anime.timing > anime.speed {
-                anime.frame = (anime.frame + 1);
+                anime.frame =anime.frame + 1;
                 anime.timing = 0.0;
             }
             if anime.frame >= anime.anims.len() as i32{
@@ -671,10 +779,31 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     projectiles::update_projectiles(state, app.timer.delta_f32());
-    println!("x_vel: {}, score: {}", state.x_vel, state.score); // Debugging
 
-    if (state.score % 20 == 0) && state.score > 0{
-        println!("enemy should be spawned");
+    //println!("x_vel: {}, score: {}", state.x_vel, state.score); // Debugging
+
+    if (state.score % 5 == 0) && state.score > 125{
+        //println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    } else if (state.score % 6 == 0) && state.score > 100{
+        //println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    } else if (state.score % 7 == 0) && state.score > 75{
+        //println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    } else if (state.score % 8 == 0) && state.score > 50{
+        //println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    } else if (state.score % 9 == 0) && state.score > 25{
+        //println!("enemy should be spawned");
+        state.score = state.score + 1;
+        enemies::spawn_enemy(state);
+    } else if (state.score % 10 == 0) && state.score > 0{
+        //println!("enemy should be spawned");
         state.score = state.score + 1;
         enemies::spawn_enemy(state);
     }
@@ -699,11 +828,31 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             .size(20.0, 20.0)
             .position(projectile.x, projectile.y);
     }
+    for enemy in &state.enemies {
+        match enemy {
+            Enemies::StaticEnemy(pe) => {
+                draw.image(&pe.enemy_text)
+                .size(30.0, 30.0)
+                .position(pe.x, pe.y);
+            }
+            Enemies::MovingEnemy(me) => {
+                draw.image(&me.enemy_text)
+                .size(30.0, 30.0)
+                .position(me.x, me.y);
+            }
+            Enemies::PoopyEnemy(po) => {
+                draw.image(&po.enemy_text)
+                .size(30.0, 30.0)
+                .position(po.x, po.y);
+            }
+        }
+    }
 
-    for enemies in &state.enemies {
-        draw.image(&enemies.enemy_text)
-            .size(ENEMY_WIDTH, ENEMY_HEIGHT)
-            .position(enemies.x, enemies.y);
+    for poopies in &state.poop {
+        draw.image(&poopies.poop_text)
+            .size(20.0, 20.0)
+            .position(poopies.x, poopies.y);
+            //.position(x_poop, y_poop);
     }
 
     //draw.image(&state.proj_text).size(20.0,20.0).position(state.x, state.y);
